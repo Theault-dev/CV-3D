@@ -1,0 +1,36 @@
+name: Build and Deploy
+
+on:
+push:
+branches: [main]
+
+jobs:
+build-and-deploy:
+runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: harruis.fr
+          username: cv3d
+          key: ${{ secrets.PI_SSH_KEY }}
+          port: 2222
+          source: "dist/*"
+          target: "/var/www/harruis.fr"
+          strip_components: 1
