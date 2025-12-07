@@ -28,7 +28,7 @@ jobs:
         with:
           host: harruis.fr
           username: cv3d
-          key: ${{ secrets.PI_SSH_KEY }}
+          key: ${{ secrets.DIETPI_SSH_KEY }}
           port: 2222
           source: "dist/*"
           target: "/var/www/harruis.fr"
