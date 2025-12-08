@@ -29,15 +29,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DIETPI_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          echo "Testing SSH keyscan..."
-          ssh-keyscan -v -p 2222 harruis.fr 2>&1 || echo "Keyscan failed"
-          ssh-keyscan -p 2222 harruis.fr >> ~/.ssh/known_hosts || true
-          echo "Known hosts content:"
-          cat ~/.ssh/known_hosts
-
-      - name: Test SSH Connection
-        run: |
-          ssh -v -o StrictHostKeyChecking=no -p 2222 cv3d@harruis.fr "echo 'SSH OK'"
+          ssh-keyscan -p 2222 harruis.fr >> ~/.ssh/known_hosts
 
       - name: Deploy to Raspberry Pi
         run: |
