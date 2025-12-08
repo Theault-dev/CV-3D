@@ -24,15 +24,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DIETPI_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -p 2222 harruis.fr >> ~/.ssh/known_hosts
+
       - name: Deploy to Raspberry Pi
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: harruis.fr
-          username: cv3d
-          key: ${{ secrets.DIETPI_SSH_KEY }}
-          port: 2222
-          source: "dist/*"
-          target: "/var/www/harruis.fr"
-          strip_components: 1
-          timeout: 120s
-          debug: true
+        run: |
+          rsync -avz -e "ssh -p 2222" --delete dist/ cv3d@harruis.fr:/var/www/harruis.fr/
