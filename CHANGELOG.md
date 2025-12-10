@@ -10,6 +10,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+-   Labels au-dessus des portes (titre + dates) avec CSS2DRenderer
 -   Moteur 3D avec Three.js (Engine)
 -   Gestion des contrôles clavier ZQSD (InputManager)
 -   Personnage jouable avec caméra TPS (Player)
