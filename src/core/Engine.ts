@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 import type { EngineConfig } from "../data/types";
 
 /**
@@ -16,6 +17,8 @@ export class Engine {
     private scene: THREE.Scene;
     private camera: THREE.PerspectiveCamera;
     private renderer: THREE.WebGLRenderer;
+
+    private labelRenderer: CSS2DRenderer;
 
     // Conteneur HTML
     private container: HTMLElement;
@@ -52,16 +55,24 @@ export class Engine {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limite pour les perfs
 
-        // 5. Ajoute le canvas au DOM
+        // 5. Crée le renderer pour les labels CSS
+        this.labelRenderer = new CSS2DRenderer();
+        this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        this.labelRenderer.domElement.style.position = "absolute";
+        this.labelRenderer.domElement.style.top = "0";
+        this.labelRenderer.domElement.style.pointerEvents = "none";
+        this.container.appendChild(this.labelRenderer.domElement);
+
+        // 6. Ajoute le canvas au DOM
         this.container.appendChild(this.renderer.domElement);
 
-        // 6. Initialise l'horloge
+        // 7. Initialise l'horloge
         this.clock = new THREE.Clock();
 
-        // 7. Écoute le redimensionnement de la fenêtre
+        // 8. Écoute le redimensionnement de la fenêtre
         window.addEventListener("resize", this.onResize.bind(this));
 
-        // 8. Ajoute une lumière de base (sinon tout est noir)
+        // 9. Ajoute une lumière de base (sinon tout est noir)
         this.addBasicLighting();
     }
 
@@ -89,6 +100,8 @@ export class Engine {
 
         // Met à jour la taille du renderer
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        this.labelRenderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     /**
@@ -108,6 +121,8 @@ export class Engine {
 
         // Dessine la scène
         this.renderer.render(this.scene, this.camera);
+
+        this.labelRenderer.render(this.scene, this.camera);
     }
 
     /**

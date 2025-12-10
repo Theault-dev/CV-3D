@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
 /**
  * Configuration d'une porte
@@ -133,24 +134,18 @@ export class Door {
      * Crée le texte au-dessus de la porte
      */
     private createText(title: string, subtitle: string): void {
-        // Pour l'instant, on utilise un panneau coloré comme placeholder
-        // Plus tard on pourra utiliser TextGeometry ou des sprites
+        // Crée l'élément HTML
+        const labelDiv = document.createElement("div");
+        labelDiv.className = "door-label";
+        labelDiv.innerHTML = `
+            <div class="door-title">${title}</div>
+            <div class="door-subtitle">${subtitle}</div>
+        `;
 
-        // Panneau pour le titre
-        const panelGeometry = new THREE.PlaneGeometry(2, 0.8);
-        const panelMaterial = new THREE.MeshStandardMaterial({
-            color: "#1a1a2e",
-            side: THREE.DoubleSide,
-        });
-        const panel = new THREE.Mesh(panelGeometry, panelMaterial);
-        panel.position.set(0, Door.HEIGHT + 0.7, 0.1);
-        this.group.add(panel);
-
-        // On stocke le titre dans userData pour l'afficher plus tard
-        this.group.userData = {
-            title,
-            subtitle,
-        };
+        // Crée l'objet CSS2D
+        const label = new CSS2DObject(labelDiv);
+        label.position.set(0, Door.HEIGHT + 0.5, 0);
+        this.group.add(label);
     }
 
     /**
