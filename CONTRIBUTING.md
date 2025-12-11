@@ -11,9 +11,9 @@ Ce projet utilise un workflow basé sur les Pull Requests :
 2. Crée une branche depuis `main` :
 
 ```bash
-   git checkout main
+   git switch main
    git pull origin main
-   git checkout -b feature/ma-fonctionnalite
+   git switch -c feature/ma-fonctionnalite
 ```
 
 3. Fais tes modifications et commit :

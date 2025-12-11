@@ -6,6 +6,7 @@ import { Player } from "./player/Player";
 import { Room } from "./world/Room";
 import { Door } from "./world/Door";
 import { InteractionPrompt } from "./ui/InteractionPrompt";
+import { HUD } from "./ui/HUD";
 import { ApiService } from "./services/ApiService";
 
 // Crée le moteur 3D et l'input manager
@@ -17,6 +18,9 @@ const api = new ApiService();
 
 // Crée l'UI d'interaction
 const interactionPrompt = new InteractionPrompt();
+
+// Crée le HUD avec les raccourcis permanents
+const hud = new HUD();
 
 // Crée le hall principal
 const hall = new Room({

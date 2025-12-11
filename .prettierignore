@@ -1,2 +1,11 @@
-# Ignore HTML files to preserve doctype casing
-*.html
+# Ignore build outputs and dependencies
+node_modules
+dist
+build
+
+# Ignore files without parsers
+.editorconfig
+.gitignore
+.prettierignore
+LICENCE
+*.svg

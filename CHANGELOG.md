@@ -6,6 +6,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- HUD permanent affichant les raccourcis clavier disponibles
+
 ## [0.2.0] - 2024-12-08
 
 ### Added
