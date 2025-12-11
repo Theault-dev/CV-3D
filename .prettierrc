@@ -3,12 +3,6 @@
     "useTabs": false,
     "semi": true,
     "singleQuote": false,
-    "overrides": [
-        {
-            "files": "*.html",
-            "options": {
-                "parser": "html"
-            }
-        }
-    ]
+    "htmlWhitespaceSensitivity": "ignore",
+    "proseWrap": "preserve"
 }

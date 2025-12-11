@@ -91,9 +91,7 @@ export class HUD {
         items.forEach((item) => {
             const keyElement = item.querySelector(".hud-key");
             if (keyElement?.textContent === key) {
-                (item as HTMLElement).style.display = visible
-                    ? "flex"
-                    : "none";
+                (item as HTMLElement).style.display = visible ? "flex" : "none";
             }
         });
     }
