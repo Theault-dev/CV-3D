@@ -11,9 +11,9 @@ Ce projet utilise un workflow basé sur les Pull Requests :
 2. Crée une branche depuis `main` :
 
 ```bash
-   git checkout main
+   git switch main
    git pull origin main
-   git checkout -b feature/ma-fonctionnalite
+   git switch -c feature/ma-fonctionnalite
 ```
 
 3. Fais tes modifications et commit :
@@ -49,15 +49,15 @@ Exemple : `feat: ajouter la salle ENSICAEN`
 
 ## 🧪 Avant de soumettre
 
-- [ ] Le projet build sans erreur (`npm run build`)
-- [ ] Le code est formaté (`npm run format` si configuré ou `npx prettier --write "src/**/*.ts"`)
-- [ ] Les types TypeScript sont corrects (pas d'erreurs dans VS Code)
+-   [ ] Le projet build sans erreur (`npm run build`)
+-   [ ] Le code est formaté (`npm run format` si configuré ou `npx prettier --write "src/**/*.ts"`)
+-   [ ] Les types TypeScript sont corrects (pas d'erreurs dans VS Code)
 
 ## 🏗️ Architecture
 
 Voir le README pour la structure des dossiers. En résumé :
 
-- `core/` : Moteur Three.js, ne devrait pas changer souvent
-- `world/` : Ajouter des salles/objets ici
-- `player/` : Logique du personnage
-- `data/` : Types partagés
+-   `core/` : Moteur Three.js, ne devrait pas changer souvent
+-   `world/` : Ajouter des salles/objets ici
+-   `player/` : Logique du personnage
+-   `data/` : Types partagés
