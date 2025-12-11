@@ -1,0 +1,2 @@
+# Ignore HTML files to preserve doctype casing
+*.html

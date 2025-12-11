@@ -50,7 +50,7 @@ Exemple : `feat: ajouter la salle ENSICAEN`
 ## 🧪 Avant de soumettre
 
 - [ ] Le projet build sans erreur (`npm run build`)
-- [ ] Le code est formaté (`npm run format` si configuré)
+- [ ] Le code est formaté (`npm run format` si configuré ou `npx prettier --write "src/**/*.ts"`)
 - [ ] Les types TypeScript sont corrects (pas d'erreurs dans VS Code)
 
 ## 🏗️ Architecture
