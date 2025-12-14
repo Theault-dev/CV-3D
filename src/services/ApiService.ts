@@ -62,18 +62,25 @@ export class ApiService {
         // Essaie de récupérer le message d'erreur du serveur
         if (!response.ok) {
             let errorMessage = `Erreur ${response.status}`;
+
+            // Lit d'abord le texte brut (on ne peut lire le body qu'une seule fois)
+            const responseText = await response.text();
+            console.error("❌ Réponse brute du serveur:", responseText);
+
+            // Essaie de parser en JSON
             try {
-                const errorData = await response.json();
-                console.error("❌ Réponse d'erreur du serveur:", errorData);
-                errorMessage = errorData.message || errorData.error || errorMessage;
+                const errorData = JSON.parse(responseText);
+                console.error("❌ Réponse d'erreur (JSON):", errorData);
+                errorMessage =
+                    errorData.message || errorData.error || errorMessage;
             } catch (e) {
-                // Si le serveur ne retourne pas de JSON, on lit le texte brut
-                const errorText = await response.text();
-                console.error("❌ Réponse d'erreur (texte):", errorText);
-                if (errorText) {
-                    errorMessage = errorText;
+                // Pas du JSON, utilise le texte brut
+                console.error("❌ Réponse d'erreur (texte non-JSON)");
+                if (responseText) {
+                    errorMessage = responseText;
                 }
             }
+
             throw new Error(errorMessage);
         }
 
