@@ -48,6 +48,9 @@ export class InputManager {
      * Appelé quand une touche est enfoncée
      */
     private onKeyDown(event: KeyboardEvent): void {
+        // Ignore les événements sans key (composition IME, etc.)
+        if (!event.key) return;
+
         const key = event.key.toLowerCase();
 
         // Gestion spéciale de la touche Échap avec les overlays
@@ -132,6 +135,9 @@ export class InputManager {
      * Appelé quand une touche est relâchée
      */
     private onKeyUp(event: KeyboardEvent): void {
+        // Ignore les événements sans key (composition IME, etc.)
+        if (!event.key) return;
+
         const key = event.key.toLowerCase();
 
         // Marque la touche comme relâchée

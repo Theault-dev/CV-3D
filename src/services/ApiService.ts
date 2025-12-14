@@ -41,12 +41,20 @@ export class ApiService {
         sujet: string;
         message: string;
     }): Promise<{ success: boolean; message: string }> {
+        // Convertit les champs français en anglais pour l'API
+        const payload = {
+            name: data.nom,
+            email: data.email,
+            subject: data.sujet,
+            message: data.message,
+        };
+
         const response = await fetch(`${this.baseUrl}/contact`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify(payload),
         });
         if (!response.ok) {
             throw new Error(`Erreur API: ${response.status}`);
