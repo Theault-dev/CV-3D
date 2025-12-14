@@ -1,0 +1,129 @@
+/**
+ * Styles pour le composant KeyboardIndicator
+ *
+ * Affiche les touches de déplacement en bas de l'écran avec des animations
+ * slide-up (apparition) et slide-down (disparition).
+ */
+
+/* === Conteneur principal === */
+.keyboard-indicator {
+    /* Positionnement fixe en bas au centre */
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%); /* Caché initialement en dessous */
+    z-index: 100; /* Au-dessus du jeu mais en dessous des overlays */
+
+    /* Espacement en bas avec viewport height */
+    padding-bottom: 4vh;
+
+    /* Animation de base */
+    opacity: 0;
+
+    /* Désactive les interactions de la souris */
+    pointer-events: none;
+}
+
+/* === État visible === */
+.keyboard-indicator.visible {
+    animation: slideUpIndicator 300ms ease-out forwards;
+}
+
+/* === État masqué === */
+.keyboard-indicator.hiding {
+    animation: slideDownIndicator 300ms ease-in forwards;
+}
+
+/* === Contenu de l'indicateur === */
+.keyboard-indicator__content {
+    /* Apparence du panneau */
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 20px 32px;
+
+    /* Espacement interne */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* === Lignes de touches === */
+.keyboard-indicator__row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+}
+
+/* === Groupe touche + label === */
+.keyboard-indicator__key-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+/* === Labels des touches === */
+.keyboard-indicator__label {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    user-select: none;
+}
+
+/* === Animations === */
+
+/**
+ * Animation d'apparition (slide-up)
+ * Glisse du bas vers le haut avec fondu
+ */
+@keyframes slideUpIndicator {
+    from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/**
+ * Animation de disparition (slide-down)
+ * Glisse du haut vers le bas avec fondu
+ */
+@keyframes slideDownIndicator {
+    from {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+}
+
+/* === Responsive === */
+
+/* Sur petits écrans, réduire la taille */
+@media (max-height: 600px) {
+    .keyboard-indicator {
+        padding-bottom: 2vh;
+    }
+
+    .keyboard-indicator__content {
+        padding: 12px 20px;
+        gap: 8px;
+    }
+
+    .keyboard-indicator__row {
+        gap: 12px;
+    }
+
+    .keyboard-indicator__label {
+        font-size: 10px;
+    }
+}

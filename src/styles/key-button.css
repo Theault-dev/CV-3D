@@ -1,0 +1,84 @@
+/**
+ * Styles pour le composant KeyButton
+ *
+ * Représentation visuelle 3D moderne d'une touche de clavier
+ * avec effet de profondeur, ombre portée et animations.
+ */
+
+/* === Base du composant === */
+.key-button {
+    /* Positionnement et flexbox */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Typographie */
+    font-family: monospace;
+    font-weight: bold;
+    color: #2a2a3a;
+
+    /* Effet 3D avec dégradé */
+    background: linear-gradient(180deg, #ffffff 0%, #e0e0e0 100%);
+    border: 2px solid #cccccc;
+    border-radius: 6px;
+
+    /* Ombre portée pour effet "flottant" */
+    box-shadow:
+        0 4px 0 #999999,           /* Profondeur de la touche */
+        0 6px 8px rgba(0, 0, 0, 0.2); /* Ombre portée douce */
+
+    /* Interaction */
+    cursor: default;
+    user-select: none;
+
+    /* Transition pour les animations */
+    transition: all 0.1s ease;
+}
+
+/* === Variantes de taille === */
+
+/* Petite touche - 32x32px */
+.key-button--small {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+/* Touche moyenne - 48x48px (par défaut) */
+.key-button--medium {
+    width: 48px;
+    height: 48px;
+    font-size: 18px;
+}
+
+/* Grande touche - 64x64px */
+.key-button--large {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+}
+
+/* === Animation au survol === */
+/* Simule l'enfoncement de la touche */
+.key-button:hover {
+    transform: translateY(2px);
+    box-shadow:
+        0 2px 0 #999999,           /* Réduit la profondeur */
+        0 3px 4px rgba(0, 0, 0, 0.2); /* Réduit l'ombre */
+}
+
+/* === État actif/pressé === */
+/* Utilisable pour montrer qu'une touche est enfoncée */
+.key-button.pressed {
+    transform: translateY(4px);
+    box-shadow:
+        0 0 0 #999999,             /* Aucune profondeur */
+        0 2px 2px rgba(0, 0, 0, 0.1); /* Ombre minimale */
+}
+
+/* === Label de la touche === */
+.key-button__label {
+    /* Le label est centré par le flexbox du parent */
+    /* On s'assure juste qu'il ne peut pas être sélectionné */
+    user-select: none;
+}

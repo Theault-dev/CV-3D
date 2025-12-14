@@ -1,16 +1,30 @@
+import { createKeyButton } from "./KeyButton";
+
 /**
  * InteractionPrompt - Affiche un message d'interaction à l'écran
+ *
+ * Utilise le composant KeyButton pour une cohérence visuelle avec le reste de l'UI
  */
 export class InteractionPrompt {
     private element: HTMLDivElement;
+    private textElement: HTMLSpanElement;
 
     constructor() {
         this.element = document.createElement("div");
         this.element.id = "interaction-prompt";
-        this.element.innerHTML = `
-      <span class="key">E</span>
-      <span class="text">Entrer</span>
-    `;
+
+        // Crée la touche E avec le composant réutilisable
+        const keyButton = createKeyButton("E", "small");
+
+        // Crée le texte
+        this.textElement = document.createElement("span");
+        this.textElement.className = "interaction-prompt__text";
+        this.textElement.textContent = "Entrer";
+
+        // Assemble les éléments
+        this.element.appendChild(keyButton);
+        this.element.appendChild(this.textElement);
+
         this.hide();
         document.body.appendChild(this.element);
 
@@ -32,7 +46,7 @@ export class InteractionPrompt {
         background: rgba(0, 0, 0, 0.8);
         border-radius: 8px;
         font-family: Arial, sans-serif;
-        color: white;
+        color: #ffffff;
         opacity: 0;
         transition: opacity 0.2s ease;
         pointer-events: none;
@@ -42,19 +56,7 @@ export class InteractionPrompt {
         opacity: 1;
       }
 
-      #interaction-prompt .key {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background: #4a90d9;
-        border-radius: 6px;
-        font-weight: bold;
-        font-size: 18px;
-      }
-
-      #interaction-prompt .text {
+      #interaction-prompt .interaction-prompt__text {
         font-size: 16px;
       }
     `;
@@ -62,7 +64,7 @@ export class InteractionPrompt {
     }
 
     public show(text: string = "Entrer"): void {
-        this.element.querySelector(".text")!.textContent = text;
+        this.textElement.textContent = text;
         this.element.classList.add("visible");
     }
 
