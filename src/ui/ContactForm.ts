@@ -313,19 +313,23 @@ export class ContactForm {
         // Vérification : champ requis
         if (rule.required && value === "") {
             isValid = false;
-            errorMessage = this.errorMessages[fieldName];
+            errorMessage = this.errorMessages[fieldName] || "";
         }
 
         // Vérification : longueur minimale
-        if (rule.minLength && value.length > 0 && value.length < rule.minLength) {
+        if (
+            rule.minLength &&
+            value.length > 0 &&
+            value.length < rule.minLength
+        ) {
             isValid = false;
-            errorMessage = this.errorMessages[fieldName];
+            errorMessage = this.errorMessages[fieldName] || "";
         }
 
         // Vérification : pattern (pour l'email)
         if (rule.pattern && value.length > 0 && !rule.pattern.test(value)) {
             isValid = false;
-            errorMessage = this.errorMessages[fieldName];
+            errorMessage = this.errorMessages[fieldName] || "";
         }
 
         // Affichage de l'erreur
@@ -429,7 +433,9 @@ export class ContactForm {
 
             // Attendre le délai minimum si l'API a répondu trop rapidement
             if (remainingTime > 0) {
-                await new Promise((resolve) => setTimeout(resolve, remainingTime));
+                await new Promise((resolve) =>
+                    setTimeout(resolve, remainingTime),
+                );
             }
 
             // Étape 4a : Succès
@@ -444,7 +450,8 @@ export class ContactForm {
             } else {
                 // Étape 4b : Erreur API (success: false)
                 this.showFormError(
-                    response.message || "Une erreur est survenue. Veuillez réessayer.",
+                    response.message ||
+                        "Une erreur est survenue. Veuillez réessayer.",
                 );
                 this.hideLoader();
             }
@@ -453,9 +460,10 @@ export class ContactForm {
             console.error("Erreur lors de l'envoi du formulaire :", error);
 
             // Affiche le message d'erreur du serveur si disponible
-            const errorMessage = error instanceof Error
-                ? error.message
-                : "Échec de transmission. Réessayez.";
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Échec de transmission. Réessayez.";
 
             this.showFormError(errorMessage);
             this.hideLoader();
@@ -532,20 +540,6 @@ export class ContactForm {
             }
 
             errorElement.style.display = "block";
-        }
-    }
-
-    /**
-     * Masque le message d'erreur global
-     */
-    private hideFormError(): void {
-        const errorElement = this.element.querySelector(
-            ".form-error",
-        ) as HTMLElement;
-
-        if (errorElement) {
-            errorElement.textContent = "";
-            errorElement.style.display = "none";
         }
     }
 

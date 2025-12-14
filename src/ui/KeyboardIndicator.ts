@@ -228,14 +228,14 @@ export class KeyboardIndicator {
      */
     private async detectKeyboardLayout(): Promise<KeyboardLayout> {
         // Méthode 1 : Essayer l'API Keyboard
+        // @ts-ignore - L'API Keyboard n'est pas encore dans les types TypeScript standard
         if (
-            navigator.keyboard &&
-            typeof (navigator.keyboard as any).getLayoutMap === "function"
+            "keyboard" in navigator &&
+            typeof (navigator as any).keyboard?.getLayoutMap === "function"
         ) {
             try {
-                const layoutMap = await (
-                    navigator.keyboard as any
-                ).getLayoutMap();
+                // @ts-ignore - L'API Keyboard n'est pas encore dans les types TypeScript standard
+                const layoutMap = await navigator.keyboard.getLayoutMap();
                 const keyW = layoutMap.get("KeyW");
 
                 // Si KeyW retourne 'z' → AZERTY
