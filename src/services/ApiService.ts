@@ -49,8 +49,6 @@ export class ApiService {
             message: data.message,
         };
 
-        console.log("📧 Envoi du formulaire de contact:", payload);
-
         const response = await fetch(`${this.baseUrl}/contact`, {
             method: "POST",
             headers: {
@@ -85,7 +83,6 @@ export class ApiService {
         }
 
         const result = await response.json();
-        console.log("✅ Réponse du serveur:", result);
         return result;
     }
 }
