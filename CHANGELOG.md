@@ -22,6 +22,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Blocage automatique des inputs du jeu quand un overlay est actif
 - Fermeture des overlays via touche Échap, bouton X ou clic sur backdrop
 
+### Changed
+
+- Refactorisation CSS : séparation du fichier style.css (508 lignes) en modules :
+  - base.css : styles de base et reset
+  - door-labels.css : labels des portes 3D
+  - hud.css : affichage du HUD
+  - overlay.css : système d'overlay
+  - contact-form.css : formulaire de contact avec thèmes
+  - success-notification.css : notification de succès
+- Animation de fermeture des overlays retourne désormais vers le bouton déclencheur
+- Nettoyage des console.log de débogage dans ApiService
+
 ## [0.2.0] - 2024-12-08
 
 ### Added
