@@ -48,7 +48,7 @@ export class HUD {
             .map(
                 (shortcut) => `
             <div class="hud-item">
-                <span class="hud-key">${shortcut.key}</span>
+                <span class="hud-key" data-key="${shortcut.key.toLowerCase()}">${shortcut.key}</span>
                 <span class="hud-description">${shortcut.description}</span>
             </div>
         `,

@@ -8,6 +8,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+- Formulaire de contact avec deux thèmes (Minimaliste et Terminal)
+- Validation en temps réel des champs avec messages d'erreur français
+- Toggle de thème avec préservation des données saisies
+- Intégration avec ApiService pour envoi des messages
+- Loader avec durée minimale de 500ms lors de la soumission
+- Notification de succès style Xbox avec animations slide-up/down
+- Gestion de la touche C pour ouvrir le formulaire de contact
+- Animation d'ouverture du formulaire depuis le bouton HUD
 - HUD permanent affichant les raccourcis clavier disponibles
 - Système d'overlay centralisé avec gestion de pile (LIFO)
 - Animations d'ouverture/fermeture des overlays depuis le bouton déclencheur
