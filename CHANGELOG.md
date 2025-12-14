@@ -14,7 +14,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Intégration avec ApiService pour envoi des messages
 - Loader avec durée minimale de 500ms lors de la soumission
 - Notification de succès style Xbox avec animations slide-up/down
-- Gestion de la touche C pour ouvrir le formulaire de contact
+- Gestion de la touche C pour ouvrir/fermer le formulaire de contact (toggle)
 - Animation d'ouverture du formulaire depuis le bouton HUD
 - HUD permanent affichant les raccourcis clavier disponibles
 - Système d'overlay centralisé avec gestion de pile (LIFO)
@@ -32,6 +32,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
   - contact-form.css : formulaire de contact avec thèmes
   - success-notification.css : notification de succès
 - Animation de fermeture des overlays retourne désormais vers le bouton déclencheur
+- Ajustement de l'ombre des overlays pour meilleur alignement visuel (décalage vertical -5px)
 - Nettoyage des console.log de débogage dans ApiService
 
 ## [0.2.0] - 2024-12-08
