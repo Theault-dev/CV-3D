@@ -444,14 +444,20 @@ export class ContactForm {
             } else {
                 // Étape 4b : Erreur API (success: false)
                 this.showFormError(
-                    "Une erreur est survenue. Veuillez réessayer.",
+                    response.message || "Une erreur est survenue. Veuillez réessayer.",
                 );
                 this.hideLoader();
             }
         } catch (error) {
             // Étape 4b : Erreur réseau ou autre
             console.error("Erreur lors de l'envoi du formulaire :", error);
-            this.showFormError("Échec de transmission. Réessayez.");
+
+            // Affiche le message d'erreur du serveur si disponible
+            const errorMessage = error instanceof Error
+                ? error.message
+                : "Échec de transmission. Réessayez.";
+
+            this.showFormError(errorMessage);
             this.hideLoader();
         }
     }

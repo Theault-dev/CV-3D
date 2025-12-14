@@ -49,6 +49,8 @@ export class ApiService {
             message: data.message,
         };
 
+        console.log("📧 Envoi du formulaire de contact:", payload);
+
         const response = await fetch(`${this.baseUrl}/contact`, {
             method: "POST",
             headers: {
@@ -56,9 +58,27 @@ export class ApiService {
             },
             body: JSON.stringify(payload),
         });
+
+        // Essaie de récupérer le message d'erreur du serveur
         if (!response.ok) {
-            throw new Error(`Erreur API: ${response.status}`);
+            let errorMessage = `Erreur ${response.status}`;
+            try {
+                const errorData = await response.json();
+                console.error("❌ Réponse d'erreur du serveur:", errorData);
+                errorMessage = errorData.message || errorData.error || errorMessage;
+            } catch (e) {
+                // Si le serveur ne retourne pas de JSON, on lit le texte brut
+                const errorText = await response.text();
+                console.error("❌ Réponse d'erreur (texte):", errorText);
+                if (errorText) {
+                    errorMessage = errorText;
+                }
+            }
+            throw new Error(errorMessage);
         }
-        return response.json();
+
+        const result = await response.json();
+        console.log("✅ Réponse du serveur:", result);
+        return result;
     }
 }
