@@ -6,22 +6,24 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-12-14
+
 ### Added
 
 - Composant KeyButton réutilisable pour afficher des touches de clavier stylisées en 3D
-  - Trois tailles disponibles : small (32px), medium (48px), large (64px)
-  - Effet de profondeur avec dégradés et ombres portées
-  - Aspect "key cap" de clavier mécanique moderne
-  - Animation au survol simulant l'enfoncement
+    - Trois tailles disponibles : small (32px), medium (48px), large (64px)
+    - Effet de profondeur avec dégradés et ombres portées
+    - Aspect "key cap" de clavier mécanique moderne
+    - Animation au survol simulant l'enfoncement
 - Indicateur de touches de déplacement (KeyboardIndicator)
-  - Détection automatique du layout clavier (AZERTY/QWERTY)
-  - Trois méthodes de détection : Keyboard API, localStorage, langue du navigateur
-  - Affichage automatique au chargement pendant 5 secondes
-  - Toggle on/off avec la touche H
-  - Animations slide-up/slide-down fluides (300ms)
-  - Timer auto-hide de 5 secondes qui se reset à chaque affichage
-  - Positionnement en bas de l'écran avec backdrop-filter
-  - Sauvegarde du layout détecté dans localStorage pour apprentissage
+    - Détection automatique du layout clavier (AZERTY/QWERTY)
+    - Trois méthodes de détection : Keyboard API, localStorage, langue du navigateur
+    - Affichage automatique au chargement pendant 5 secondes
+    - Toggle on/off avec la touche H
+    - Animations slide-up/slide-down fluides (300ms)
+    - Timer auto-hide de 5 secondes qui se reset à chaque affichage
+    - Positionnement en bas de l'écran avec backdrop-filter
+    - Sauvegarde du layout détecté dans localStorage pour apprentissage
 - Gestion de la touche H pour afficher/masquer l'indicateur de déplacement
 - Label HUD de la touche H mis à jour : "Touches de déplacement"
 - Formulaire de contact avec deux thèmes (Minimaliste et Terminal)
@@ -41,18 +43,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 ### Changed
 
 - Refactorisation de InteractionPrompt pour utiliser le composant KeyButton
-  - Cohérence visuelle avec le reste de l'UI
-  - Remplacement de la touche E stylée en dur par le composant réutilisable
+    - Cohérence visuelle avec le reste de l'UI
+    - Remplacement de la touche E stylée en dur par le composant réutilisable
 - Ajout des styles CSS modulaires :
-  - key-button.css : composant de touche réutilisable
-  - keyboard-indicator.css : indicateur de touches de déplacement
+    - key-button.css : composant de touche réutilisable
+    - keyboard-indicator.css : indicateur de touches de déplacement
 - Refactorisation CSS : séparation du fichier style.css (508 lignes) en modules :
-  - base.css : styles de base et reset
-  - door-labels.css : labels des portes 3D
-  - hud.css : affichage du HUD
-  - overlay.css : système d'overlay
-  - contact-form.css : formulaire de contact avec thèmes
-  - success-notification.css : notification de succès
+    - base.css : styles de base et reset
+    - door-labels.css : labels des portes 3D
+    - hud.css : affichage du HUD
+    - overlay.css : système d'overlay
+    - contact-form.css : formulaire de contact avec thèmes
+    - success-notification.css : notification de succès
 - Animation de fermeture des overlays retourne désormais vers le bouton déclencheur
 - Ajustement de l'ombre des overlays pour meilleur alignement visuel (décalage vertical -5px)
 - Nettoyage des console.log de débogage dans ApiService

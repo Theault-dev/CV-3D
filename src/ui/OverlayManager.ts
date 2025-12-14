@@ -99,7 +99,10 @@ export class OverlayManager {
      *   </div>
      * </div>
      */
-    private createOverlayStructure(content: HTMLElement, triggerButton?: HTMLElement): OverlayItem {
+    private createOverlayStructure(
+        content: HTMLElement,
+        triggerButton?: HTMLElement,
+    ): OverlayItem {
         // Backdrop (fond semi-transparent avec blur)
         const backdrop = document.createElement("div");
         backdrop.className = "overlay-backdrop";
@@ -137,13 +140,19 @@ export class OverlayManager {
         container.appendChild(contentWrapper);
         backdrop.appendChild(container);
 
-        return {
+        const overlayItem: OverlayItem = {
             backdrop,
             container,
             content: contentWrapper,
             closeButton,
-            triggerButton, // Sauvegarde pour l'animation de fermeture
         };
+
+        // Ajoute le triggerButton seulement s'il est défini
+        if (triggerButton) {
+            overlayItem.triggerButton = triggerButton;
+        }
+
+        return overlayItem;
     }
 
     /**

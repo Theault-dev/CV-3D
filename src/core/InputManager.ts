@@ -110,12 +110,11 @@ export class InputManager {
             const contactForm = new ContactForm();
 
             // Écoute l'événement de succès pour fermer l'overlay
-            contactForm.getElement().addEventListener(
-                "contactFormSuccess",
-                () => {
+            contactForm
+                .getElement()
+                .addEventListener("contactFormSuccess", () => {
                     this.overlayManager?.close();
-                },
-            );
+                });
 
             // Ouvre le formulaire dans un overlay avec animation depuis le bouton
             this.overlayManager?.open(

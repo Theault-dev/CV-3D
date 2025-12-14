@@ -29,7 +29,7 @@ const api = new ApiService();
 const interactionPrompt = new InteractionPrompt();
 
 // Crée le HUD avec les raccourcis permanents
-const hud = new HUD();
+new HUD();
 
 // Crée et initialise l'indicateur de touches de déplacement
 const keyboardIndicator = new KeyboardIndicator();
