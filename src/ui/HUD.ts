@@ -12,7 +12,7 @@ export class HUD {
      * Les touches contextuelles (E, Échap, etc.) sont gérées séparément
      */
     private readonly shortcuts = [
-        { key: "H", description: "Maintenir pour aide" },
+        { key: "H", description: "Touches de déplacement" },
         { key: "C", description: "Formulaire contact" },
         { key: "M", description: "Musique on/off" },
         { key: "Tab", description: "Salles visitées" },

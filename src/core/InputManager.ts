@@ -1,4 +1,5 @@
 import type { OverlayManager } from "../ui/OverlayManager";
+import type { KeyboardIndicator } from "../ui/KeyboardIndicator";
 import { ContactForm } from "../ui/ContactForm";
 
 /**
@@ -10,6 +11,7 @@ import { ContactForm } from "../ui/ContactForm";
  * - Fournir une API simple pour interroger l'état
  * - Bloquer les inputs du jeu quand un overlay est actif
  * - Gérer l'ouverture/fermeture du formulaire de contact (touche C)
+ * - Gérer l'affichage de l'indicateur de touches de déplacement (touche H)
  * - (Plus tard) Gérer le joystick virtuel mobile
  */
 export class InputManager {
@@ -25,6 +27,9 @@ export class InputManager {
 
     // Référence au gestionnaire d'overlays (pour bloquer les inputs)
     private overlayManager: OverlayManager | null = null;
+
+    // Référence à l'indicateur de touches de déplacement
+    private keyboardIndicator: KeyboardIndicator | null = null;
 
     constructor() {
         // Écoute les événements clavier
@@ -45,6 +50,14 @@ export class InputManager {
     }
 
     /**
+     * Définit l'indicateur de touches de déplacement
+     * Doit être appelé après la création du KeyboardIndicator
+     */
+    public setKeyboardIndicator(indicator: KeyboardIndicator): void {
+        this.keyboardIndicator = indicator;
+    }
+
+    /**
      * Appelé quand une touche est enfoncée
      */
     private onKeyDown(event: KeyboardEvent): void {
@@ -61,6 +74,21 @@ export class InputManager {
                 event.preventDefault();
                 return; // Bloque le traitement normal de la touche
             }
+        }
+
+        // Gestion de la touche H pour afficher/masquer l'indicateur de touches
+        if (key === "h") {
+            // Si un overlay est actif, on le ferme
+            if (this.overlayManager?.hasActiveOverlay()) {
+                this.overlayManager.close();
+                event.preventDefault();
+                return;
+            }
+
+            // Sinon, on toggle l'indicateur de touches de déplacement
+            this.keyboardIndicator?.toggle();
+            event.preventDefault();
+            return; // Bloque le traitement normal de la touche
         }
 
         // Gestion de la touche C pour ouvrir/fermer le formulaire de contact

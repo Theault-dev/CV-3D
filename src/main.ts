@@ -8,6 +8,7 @@ import { Door } from "./world/Door";
 import { InteractionPrompt } from "./ui/InteractionPrompt";
 import { HUD } from "./ui/HUD";
 import { OverlayManager } from "./ui/OverlayManager";
+import { KeyboardIndicator } from "./ui/KeyboardIndicator";
 import { ApiService } from "./services/ApiService";
 
 // Crée le moteur 3D et l'input manager
@@ -29,6 +30,17 @@ const interactionPrompt = new InteractionPrompt();
 
 // Crée le HUD avec les raccourcis permanents
 const hud = new HUD();
+
+// Crée et initialise l'indicateur de touches de déplacement
+const keyboardIndicator = new KeyboardIndicator();
+await keyboardIndicator.init();
+
+// Connecte l'indicateur de touches à l'input manager
+// (pour gérer la touche H)
+input.setKeyboardIndicator(keyboardIndicator);
+
+// Affiche l'indicateur automatiquement au démarrage (pendant 5 secondes)
+keyboardIndicator.show();
 
 // Crée le hall principal
 const hall = new Room({
