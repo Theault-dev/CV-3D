@@ -1,4 +1,5 @@
 import type { OverlayManager } from "../ui/OverlayManager";
+import { ContactForm } from "../ui/ContactForm";
 
 /**
  * InputManager - Gestion des entrées utilisateur
@@ -8,6 +9,7 @@ import type { OverlayManager } from "../ui/OverlayManager";
  * - Maintenir l'état des touches (enfoncée/relâchée)
  * - Fournir une API simple pour interroger l'état
  * - Bloquer les inputs du jeu quand un overlay est actif
+ * - Gérer l'ouverture/fermeture du formulaire de contact (touche C)
  * - (Plus tard) Gérer le joystick virtuel mobile
  */
 export class InputManager {
@@ -46,6 +48,9 @@ export class InputManager {
      * Appelé quand une touche est enfoncée
      */
     private onKeyDown(event: KeyboardEvent): void {
+        // Ignore les événements sans key (composition IME, etc.)
+        if (!event.key) return;
+
         const key = event.key.toLowerCase();
 
         // Gestion spéciale de la touche Échap avec les overlays
@@ -58,11 +63,48 @@ export class InputManager {
             }
         }
 
-        // Si un overlay est actif, on bloque TOUS les autres inputs du jeu
-        if (this.overlayManager?.hasActiveOverlay()) {
-            // Empêche le comportement par défaut
+        // Gestion de la touche C pour ouvrir/fermer le formulaire de contact
+        if (key === "c") {
+            // Si un overlay est actif, on le ferme
+            if (this.overlayManager?.hasActiveOverlay()) {
+                this.overlayManager.close();
+                event.preventDefault();
+                return;
+            }
+
+            // Sinon, on ouvre le formulaire de contact
+            // Récupère le bouton "C Contact" du HUD pour l'animation
+            const contactButton = document.querySelector(
+                '.hud-key[data-key="c"]',
+            ) as HTMLElement;
+
+            // Crée une nouvelle instance du formulaire
+            const contactForm = new ContactForm();
+
+            // Écoute l'événement de succès pour fermer l'overlay
+            contactForm.getElement().addEventListener(
+                "contactFormSuccess",
+                () => {
+                    this.overlayManager?.close();
+                },
+            );
+
+            // Ouvre le formulaire dans un overlay avec animation depuis le bouton
+            this.overlayManager?.open(
+                contactForm.getElement(),
+                contactButton || undefined,
+            );
+
             event.preventDefault();
-            return; // Bloque complètement le traitement
+            return; // Bloque le traitement normal de la touche
+        }
+
+        // Si un overlay est actif, on ne traite PAS les touches comme des commandes de jeu
+        // mais on les laisse se propager pour permettre la saisie dans les inputs
+        if (this.overlayManager?.hasActiveOverlay()) {
+            // Ne pas enregistrer les touches ni mettre à jour le mouvement
+            // Les touches peuvent toujours être utilisées pour écrire dans les formulaires
+            return;
         }
 
         // Comportement normal : pas d'overlay actif
@@ -98,6 +140,9 @@ export class InputManager {
      * Appelé quand une touche est relâchée
      */
     private onKeyUp(event: KeyboardEvent): void {
+        // Ignore les événements sans key (composition IME, etc.)
+        if (!event.key) return;
+
         const key = event.key.toLowerCase();
 
         // Marque la touche comme relâchée
