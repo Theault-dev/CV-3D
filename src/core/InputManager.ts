@@ -1,3 +1,5 @@
+import type { OverlayManager } from "../ui/OverlayManager";
+
 /**
  * InputManager - Gestion des entrées utilisateur
  *
@@ -5,6 +7,7 @@
  * - Écouter les événements clavier
  * - Maintenir l'état des touches (enfoncée/relâchée)
  * - Fournir une API simple pour interroger l'état
+ * - Bloquer les inputs du jeu quand un overlay est actif
  * - (Plus tard) Gérer le joystick virtuel mobile
  */
 export class InputManager {
@@ -18,6 +21,9 @@ export class InputManager {
     // Touches qui viennent d'être pressées (pour les actions uniques)
     private justPressed: Set<string> = new Set();
 
+    // Référence au gestionnaire d'overlays (pour bloquer les inputs)
+    private overlayManager: OverlayManager | null = null;
+
     constructor() {
         // Écoute les événements clavier
         window.addEventListener("keydown", this.onKeyDown.bind(this));
@@ -29,11 +35,37 @@ export class InputManager {
     }
 
     /**
+     * Définit le gestionnaire d'overlays
+     * Doit être appelé après la création de l'OverlayManager
+     */
+    public setOverlayManager(overlayManager: OverlayManager): void {
+        this.overlayManager = overlayManager;
+    }
+
+    /**
      * Appelé quand une touche est enfoncée
      */
     private onKeyDown(event: KeyboardEvent): void {
         const key = event.key.toLowerCase();
 
+        // Gestion spéciale de la touche Échap avec les overlays
+        if (key === "escape") {
+            // Si un overlay est actif, on le ferme et on bloque tout le reste
+            if (this.overlayManager?.hasActiveOverlay()) {
+                this.overlayManager.close();
+                event.preventDefault();
+                return; // Bloque le traitement normal de la touche
+            }
+        }
+
+        // Si un overlay est actif, on bloque TOUS les autres inputs du jeu
+        if (this.overlayManager?.hasActiveOverlay()) {
+            // Empêche le comportement par défaut
+            event.preventDefault();
+            return; // Bloque complètement le traitement
+        }
+
+        // Comportement normal : pas d'overlay actif
         if (
             [
                 "z",

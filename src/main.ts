@@ -7,11 +7,19 @@ import { Room } from "./world/Room";
 import { Door } from "./world/Door";
 import { InteractionPrompt } from "./ui/InteractionPrompt";
 import { HUD } from "./ui/HUD";
+import { OverlayManager } from "./ui/OverlayManager";
 import { ApiService } from "./services/ApiService";
 
 // Crée le moteur 3D et l'input manager
 const engine = new Engine();
 const input = new InputManager();
+
+// Crée le gestionnaire d'overlays
+const overlayManager = new OverlayManager();
+
+// Connecte l'overlay manager à l'input manager
+// (pour bloquer les inputs du jeu quand un overlay est actif)
+input.setOverlayManager(overlayManager);
 
 // Crée le service API
 const api = new ApiService();
@@ -72,31 +80,25 @@ let nearbyDoor: Door | null = null;
 // Fonction appelée quand on entre dans une porte
 async function enterDoor(door: Door): Promise<void> {
     const doorId = door.getId();
-    console.log(`🚪 Entrée dans: ${doorId}`);
 
     try {
-        // Récupère les données depuis l'API
         const periode = await api.getPeriode(doorId);
 
-        console.log("📄 Données reçues:", periode);
+        // Créer le contenu de l'overlay
+        const content = document.createElement("div");
+        content.innerHTML = `
+            <h1>${periode.titre}</h1>
+            <h2>${periode.lieu}</h2>
+            <p>${periode.dates.debut} - ${periode.dates.fin}</p>
+            <p>${periode.description}</p>
+            <p>${periode.competences}</p>
+            <p>${periode.projets}</p>
+        `;
 
-        // Affiche les infos (temporaire)
-        const projetsText = periode.projets
-            .map((p) => `  - ${p.nom}: ${p.description}`)
-            .join("\n");
-
-        const competencesText = periode.competences.join(", ");
-
-        alert(
-            `${periode.titre} @ ${periode.lieu}\n` +
-                `${periode.dates.debut} - ${periode.dates.fin}\n\n` +
-                `${periode.description}\n\n` +
-                `Projets:\n${projetsText || "  (aucun)"}\n\n` +
-                `Compétences: ${competencesText}`,
-        );
+        // Ouvrir l'overlay (remplace le alert())
+        overlayManager.open(content);
     } catch (error) {
         console.error("❌ Erreur API:", error);
-        alert("Erreur lors du chargement des données.");
     }
 }
 
