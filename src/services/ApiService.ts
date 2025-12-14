@@ -41,11 +41,11 @@ export class ApiService {
         sujet: string;
         message: string;
     }): Promise<{ success: boolean; message: string }> {
-        // Convertit les champs français en anglais pour l'API
+        // Le serveur attend les champs en français (nom, sujet, email, message)
         const payload = {
-            name: data.nom,
+            nom: data.nom,
             email: data.email,
-            subject: data.sujet,
+            sujet: data.sujet,
             message: data.message,
         };
 
