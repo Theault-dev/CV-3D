@@ -84,3 +84,92 @@ canvas {
     color: #e0e0e0;
     white-space: nowrap;
 }
+
+/* === Overlay System === */
+
+/* Backdrop - Fond semi-transparent avec effet de flou */
+.overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Container - Boîte centrale de l'overlay */
+.overlay-container {
+    position: relative;
+    background: linear-gradient(135deg, #2a2a3a 0%, #3a3a4a 100%);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+    padding: 32px;
+    cursor: default;
+    font-family: Arial, sans-serif;
+}
+
+/* Bouton de fermeture */
+.overlay-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.overlay-close:hover {
+    background: rgba(255, 77, 77, 0.8);
+    border-color: rgba(255, 77, 77, 1);
+    transform: scale(1.1);
+}
+
+.overlay-close:active {
+    transform: scale(0.95);
+}
+
+/* Contenu de l'overlay */
+.overlay-content {
+    color: #ffffff;
+    min-width: 300px;
+}
+
+/* Scrollbar personnalisée pour le container */
+.overlay-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.overlay-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.overlay-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.overlay-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}

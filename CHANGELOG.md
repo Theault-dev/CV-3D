@@ -9,6 +9,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 ### Added
 
 - HUD permanent affichant les raccourcis clavier disponibles
+- Système d'overlay centralisé avec gestion de pile (LIFO)
+- Animations d'ouverture/fermeture des overlays depuis le bouton déclencheur
+- Blocage automatique des inputs du jeu quand un overlay est actif
+- Fermeture des overlays via touche Échap, bouton X ou clic sur backdrop
 
 ## [0.2.0] - 2024-12-08
 
