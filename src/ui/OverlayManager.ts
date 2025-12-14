@@ -17,6 +17,7 @@ interface OverlayItem {
     container: HTMLElement; // Boîte centrale
     content: HTMLElement; // Contenu injecté
     closeButton: HTMLElement; // Bouton de fermeture
+    triggerButton?: HTMLElement; // Bouton déclencheur (pour l'animation de fermeture)
 }
 
 export class OverlayManager {
@@ -40,7 +41,7 @@ export class OverlayManager {
      */
     public open(content: HTMLElement, triggerButton?: HTMLElement): void {
         // Crée la structure HTML de l'overlay
-        const overlayItem = this.createOverlayStructure(content);
+        const overlayItem = this.createOverlayStructure(content, triggerButton);
 
         // Ajoute au DOM
         document.body.appendChild(overlayItem.backdrop);
@@ -98,7 +99,7 @@ export class OverlayManager {
      *   </div>
      * </div>
      */
-    private createOverlayStructure(content: HTMLElement): OverlayItem {
+    private createOverlayStructure(content: HTMLElement, triggerButton?: HTMLElement): OverlayItem {
         // Backdrop (fond semi-transparent avec blur)
         const backdrop = document.createElement("div");
         backdrop.className = "overlay-backdrop";
@@ -141,6 +142,7 @@ export class OverlayManager {
             container,
             content: contentWrapper,
             closeButton,
+            triggerButton, // Sauvegarde pour l'animation de fermeture
         };
     }
 
@@ -196,11 +198,14 @@ export class OverlayManager {
     /**
      * Anime la fermeture de l'overlay
      *
-     * Fade-out + scale down vers le centre
+     * Si un bouton déclencheur existe :
+     * - Retourne vers la position du bouton (animation inverse de l'ouverture)
+     * Sinon :
+     * - Fade-out + scale down vers le centre
      * Supprime du DOM après l'animation
      */
     private animateClose(overlayItem: OverlayItem): void {
-        const { backdrop, container } = overlayItem;
+        const { backdrop, container, triggerButton } = overlayItem;
 
         // Active les transitions
         backdrop.style.transition = `opacity ${this.CLOSE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`;
@@ -209,7 +214,27 @@ export class OverlayManager {
         // Animation de fermeture
         backdrop.style.opacity = "0";
         container.style.opacity = "0";
-        container.style.transform = "scale(0.9)";
+
+        // Si on a un bouton déclencheur, anime vers sa position
+        if (triggerButton) {
+            const buttonRect = triggerButton.getBoundingClientRect();
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            // Centre du bouton
+            const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+            const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+            // Delta entre le centre de l'écran et le bouton
+            const deltaX = buttonCenterX - centerX;
+            const deltaY = buttonCenterY - centerY;
+
+            // Anime vers le bouton en rétrécissant
+            container.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.1)`;
+        } else {
+            // Sinon, simple scale down vers le centre
+            container.style.transform = "scale(0.9)";
+        }
 
         // Supprime du DOM après l'animation
         setTimeout(() => {
