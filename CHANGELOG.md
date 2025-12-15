@@ -19,7 +19,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Fonction initializeWorld() asynchrone pour chargement API et création de la salle
 - Gestion d'erreur avec salle par défaut et porte fallback en cas d'échec de l'API
 - Espacement minimum de 3 unités entre les portes pour éviter le chevauchement
-- Dimensions adaptatives de la salle (min: 20x15, max: 50x40)
+- Dimensions adaptatives de la salle (min: 10x8, max: 25x20)
 
 ### Changed
 

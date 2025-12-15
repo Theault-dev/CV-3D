@@ -50,41 +50,41 @@ keyboardIndicator.show();
  */
 function calculateRoomDimensions(
     formationCount: number,
-    travailCount: number
+    travailCount: number,
 ): { width: number; depth: number; height: number } {
     // Espacement minimum entre portes (largeur porte = 1.5, donc 3 unités = bon espacement)
     const minSpacing = 3;
 
-    // Marges de sécurité autour de la salle
-    const widthMargin = 6; // Marge gauche/droite
-    const depthMargin = 10; // Marge avant (entrée) / arrière
+    // Marges de sécurité autour de la salle (réduites de moitié)
+    const widthMargin = 4; // Marge gauche/droite
+    const depthMargin = 7; // Marge avant (entrée) / arrière
 
-    // Largeur minimale et maximale de la salle
-    const minWidth = 20;
-    const maxWidth = 50;
+    // Largeur minimale et maximale de la salle (réduites de moitié)
+    const minWidth = 14;
+    const maxWidth = 33;
 
-    // Profondeur minimale et maximale de la salle
-    const minDepth = 15;
-    const maxDepth = 40;
+    // Profondeur minimale et maximale de la salle (réduites de moitié)
+    const minDepth = 11;
+    const maxDepth = 28;
 
     // Calcul de la largeur nécessaire pour les portes du mur du fond (axe X)
     // Nombre de portes * espacement minimum + marges
     const neededWidth = Math.max(
         minWidth,
-        Math.min(maxWidth, travailCount * minSpacing + widthMargin)
+        Math.min(maxWidth, travailCount * minSpacing + widthMargin),
     );
 
     // Calcul de la profondeur nécessaire pour les portes du mur gauche (axe Z)
     // Nombre de portes * espacement minimum + marges
     const neededDepth = Math.max(
         minDepth,
-        Math.min(maxDepth, formationCount * minSpacing + depthMargin)
+        Math.min(maxDepth, formationCount * minSpacing + depthMargin),
     );
 
     return {
         width: neededWidth,
         depth: neededDepth,
-        height: 5 // Hauteur fixe
+        height: 5, // Hauteur fixe
     };
 }
 
@@ -98,24 +98,24 @@ function calculateRoomDimensions(
  * @returns Position THREE.Vector3 et rotation
  */
 function calculateDoorPosition(
-    type: 'formation' | 'travail',
+    type: "formation" | "travail",
     index: number,
     totalOfType: number,
     roomWidth: number,
-    roomDepth: number
+    roomDepth: number,
 ): { position: THREE.Vector3; rotation: number } {
-    if (type === 'formation') {
+    if (type === "formation") {
         // Mur gauche : X = -roomWidth/2, Z varie selon l'index
         // Ancien proche entrée (Z positif) → récent vers fond (Z négatif)
         const leftWallX = -roomWidth / 2;
         const availableDepth = roomDepth - 5; // Marge de 5 unités (entrée + fond)
         const spacing = availableDepth / Math.max(totalOfType, 1);
         const startZ = roomDepth / 2 - 2.5; // Commence proche de l'entrée
-        const z = startZ - (index * spacing);
+        const z = startZ - index * spacing;
 
         return {
             position: new THREE.Vector3(leftWallX, 0, z),
-            rotation: Math.PI / 2  // 90° pour face vers l'est
+            rotation: Math.PI / 2, // 90° pour face vers l'est
         };
     } else {
         // Mur du fond : Z = -roomDepth/2, X varie selon l'index
@@ -124,11 +124,11 @@ function calculateDoorPosition(
         const availableWidth = roomWidth - 4; // Marge de 4 unités (gauche + droite)
         const spacing = availableWidth / Math.max(totalOfType - 1, 1);
         const startX = -availableWidth / 2;
-        const x = startX + (index * spacing);
+        const x = startX + index * spacing;
 
         return {
             position: new THREE.Vector3(x, 0, backWallZ),
-            rotation: 0  // Face vers le joueur
+            rotation: 0, // Face vers le joueur
         };
     }
 }
@@ -150,16 +150,18 @@ async function initializeWorld(): Promise<void> {
         });
 
         // Séparation par type
-        const formations = sortedPeriods.filter(p => p.type === 'formation');
-        const travaux = sortedPeriods.filter(p => p.type === 'travail');
+        const formations = sortedPeriods.filter((p) => p.type === "formation");
+        const travaux = sortedPeriods.filter((p) => p.type === "travail");
 
         // Calcul des dimensions optimales de la salle
         const roomDimensions = calculateRoomDimensions(
             formations.length,
-            travaux.length
+            travaux.length,
         );
 
-        console.log(`📐 Dimensions de la salle : ${roomDimensions.width}x${roomDimensions.depth}x${roomDimensions.height}`);
+        console.log(
+            `📐 Dimensions de la salle : ${roomDimensions.width}x${roomDimensions.depth}x${roomDimensions.height}`,
+        );
 
         // Crée le hall avec les dimensions calculées
         const hall = new Room({
@@ -174,11 +176,11 @@ async function initializeWorld(): Promise<void> {
         // Génération des portes de formation
         formations.forEach((periode, index) => {
             const { position, rotation } = calculateDoorPosition(
-                'formation',
+                "formation",
                 index,
                 formations.length,
                 roomDimensions.width,
-                roomDimensions.depth
+                roomDimensions.depth,
             );
 
             const door = new Door({
@@ -187,7 +189,7 @@ async function initializeWorld(): Promise<void> {
                 subtitle: `${periode.dates.debut} - ${periode.dates.fin}`,
                 position: position,
                 rotation: rotation,
-                color: "#4a6741"  // Vert pour formations
+                color: "#4a6741", // Vert pour formations
             });
 
             doors.push(door);
@@ -197,11 +199,11 @@ async function initializeWorld(): Promise<void> {
         // Génération des portes de travail
         travaux.forEach((periode, index) => {
             const { position, rotation } = calculateDoorPosition(
-                'travail',
+                "travail",
                 index,
                 travaux.length,
                 roomDimensions.width,
-                roomDimensions.depth
+                roomDimensions.depth,
             );
 
             const door = new Door({
@@ -210,15 +212,16 @@ async function initializeWorld(): Promise<void> {
                 subtitle: `${periode.dates.debut} - ${periode.dates.fin}`,
                 position: position,
                 rotation: rotation,
-                color: "#6b4423"  // Marron pour travail
+                color: "#6b4423", // Marron pour travail
             });
 
             doors.push(door);
             engine.add(door.getObject());
         });
 
-        console.log(`✅ ${doors.length} portes générées (${formations.length} formations, ${travaux.length} travaux)`);
-
+        console.log(
+            `✅ ${doors.length} portes générées (${formations.length} formations, ${travaux.length} travaux)`,
+        );
     } catch (error) {
         console.error("❌ Erreur lors du chargement des portes:", error);
 
@@ -237,7 +240,7 @@ async function initializeWorld(): Promise<void> {
             title: "Erreur de chargement",
             subtitle: "API inaccessible",
             position: new THREE.Vector3(0, 0, -7.5),
-            color: "#ff0000"
+            color: "#ff0000",
         });
         doors.push(fallbackDoor);
         engine.add(fallbackDoor.getObject());
