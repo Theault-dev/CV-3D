@@ -52,6 +52,39 @@ const hall = new Room({
 });
 engine.add(hall.getObject());
 
+/**
+ * Calcule la position d'une porte selon son type et son index
+ * @param type - "formation" (mur gauche) ou "travail" (mur du fond)
+ * @param index - Position dans l'ordre chronologique
+ * @param totalOfType - Nombre total de portes de ce type
+ * @returns Position THREE.Vector3 et rotation
+ */
+function calculateDoorPosition(
+    type: 'formation' | 'travail',
+    index: number,
+    totalOfType: number
+): { position: THREE.Vector3; rotation: number } {
+    if (type === 'formation') {
+        // Mur gauche : X=-10, Z varie selon l'index
+        // Ancien proche entrée (Z=4) → récent vers fond (Z=-6)
+        const spacing = 10 / Math.max(totalOfType, 1); // Espace entre portes
+        const z = 4 - (index * spacing); // Z décroissant
+        return {
+            position: new THREE.Vector3(-10, 0, z),
+            rotation: Math.PI / 2  // 90° pour face vers l'est
+        };
+    } else {
+        // Mur du fond : Z=-7.5, X varie selon l'index
+        // Ancien à gauche (X=-7) → récent à droite (X=7)
+        const spacing = 14 / Math.max(totalOfType - 1, 1); // Espace entre portes
+        const x = -7 + (index * spacing);
+        return {
+            position: new THREE.Vector3(x, 0, -7.5),
+            rotation: 0  // Face vers le joueur
+        };
+    }
+}
+
 // Crée les 3 portes
 const doors: Door[] = [
     new Door({
