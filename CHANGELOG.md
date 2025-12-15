@@ -14,22 +14,28 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Tri chronologique des portes par date de début
 - Placement des formations sur le mur gauche (ancien→récent de l'entrée vers le fond)
 - Placement des travaux sur le mur du fond (ancien→récent de gauche à droite)
-- Fonction calculateDoorPosition() pour calcul automatique des positions
-- Fonction initializeDoors() asynchrone pour chargement API
-- Gestion d'erreur avec porte fallback en cas d'échec de l'API
+- Fonction calculateRoomDimensions() pour ajuster la taille de la salle selon le nombre de portes
+- Fonction calculateDoorPosition() pour calcul automatique des positions avec dimensions dynamiques
+- Fonction initializeWorld() asynchrone pour chargement API et création de la salle
+- Gestion d'erreur avec salle par défaut et porte fallback en cas d'échec de l'API
+- Espacement minimum de 3 unités entre les portes pour éviter le chevauchement
+- Dimensions adaptatives de la salle (min: 20x15, max: 50x40)
 
 ### Changed
 
 - Suppression des 3 portes hardcodées dans main.ts
 - Les portes sont maintenant générées dynamiquement au démarrage
-- Espacement dynamique des portes selon leur nombre
+- La salle s'adapte automatiquement au nombre de portes sur chaque mur
+- Espacement dynamique des portes selon leur nombre et les dimensions de la salle
+- Les positions des portes sont calculées relativement aux dimensions de la salle (-width/2, -depth/2)
 
 ### Technical
 
 - Ajout du champ `type: 'formation' | 'travail'` à l'interface Periode
-- Utilisation du top-level await pour initializeDoors()
+- Utilisation du top-level await pour initializeWorld()
 - Les portes de formation utilisent une rotation de 90° (mur gauche)
 - Les portes de travail utilisent une rotation de 0° (mur du fond)
+- Algorithme de dimensionnement : minSpacing * doorCount + margins (avec min/max)
 
 ## [0.3.0] - 2024-12-14
 

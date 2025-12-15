@@ -42,44 +42,92 @@ input.setKeyboardIndicator(keyboardIndicator);
 // Affiche l'indicateur automatiquement au démarrage (pendant 5 secondes)
 keyboardIndicator.show();
 
-// Crée le hall principal
-const hall = new Room({
-    width: 20,
-    depth: 15,
-    height: 5,
-    floorColor: "#2a2a3a",
-    wallColor: "#3a3a4a",
-});
-engine.add(hall.getObject());
+/**
+ * Calcule les dimensions optimales de la salle selon le nombre de portes
+ * @param formationCount - Nombre de portes de formation (mur gauche)
+ * @param travailCount - Nombre de portes de travail (mur du fond)
+ * @returns Dimensions de la salle
+ */
+function calculateRoomDimensions(
+    formationCount: number,
+    travailCount: number
+): { width: number; depth: number; height: number } {
+    // Espacement minimum entre portes (largeur porte = 1.5, donc 3 unités = bon espacement)
+    const minSpacing = 3;
+
+    // Marges de sécurité autour de la salle
+    const widthMargin = 6; // Marge gauche/droite
+    const depthMargin = 10; // Marge avant (entrée) / arrière
+
+    // Largeur minimale et maximale de la salle
+    const minWidth = 20;
+    const maxWidth = 50;
+
+    // Profondeur minimale et maximale de la salle
+    const minDepth = 15;
+    const maxDepth = 40;
+
+    // Calcul de la largeur nécessaire pour les portes du mur du fond (axe X)
+    // Nombre de portes * espacement minimum + marges
+    const neededWidth = Math.max(
+        minWidth,
+        Math.min(maxWidth, travailCount * minSpacing + widthMargin)
+    );
+
+    // Calcul de la profondeur nécessaire pour les portes du mur gauche (axe Z)
+    // Nombre de portes * espacement minimum + marges
+    const neededDepth = Math.max(
+        minDepth,
+        Math.min(maxDepth, formationCount * minSpacing + depthMargin)
+    );
+
+    return {
+        width: neededWidth,
+        depth: neededDepth,
+        height: 5 // Hauteur fixe
+    };
+}
 
 /**
  * Calcule la position d'une porte selon son type et son index
  * @param type - "formation" (mur gauche) ou "travail" (mur du fond)
  * @param index - Position dans l'ordre chronologique
  * @param totalOfType - Nombre total de portes de ce type
+ * @param roomWidth - Largeur de la salle
+ * @param roomDepth - Profondeur de la salle
  * @returns Position THREE.Vector3 et rotation
  */
 function calculateDoorPosition(
     type: 'formation' | 'travail',
     index: number,
-    totalOfType: number
+    totalOfType: number,
+    roomWidth: number,
+    roomDepth: number
 ): { position: THREE.Vector3; rotation: number } {
     if (type === 'formation') {
-        // Mur gauche : X=-10, Z varie selon l'index
-        // Ancien proche entrée (Z=4) → récent vers fond (Z=-6)
-        const spacing = 10 / Math.max(totalOfType, 1); // Espace entre portes
-        const z = 4 - (index * spacing); // Z décroissant
+        // Mur gauche : X = -roomWidth/2, Z varie selon l'index
+        // Ancien proche entrée (Z positif) → récent vers fond (Z négatif)
+        const leftWallX = -roomWidth / 2;
+        const availableDepth = roomDepth - 5; // Marge de 5 unités (entrée + fond)
+        const spacing = availableDepth / Math.max(totalOfType, 1);
+        const startZ = roomDepth / 2 - 2.5; // Commence proche de l'entrée
+        const z = startZ - (index * spacing);
+
         return {
-            position: new THREE.Vector3(-10, 0, z),
+            position: new THREE.Vector3(leftWallX, 0, z),
             rotation: Math.PI / 2  // 90° pour face vers l'est
         };
     } else {
-        // Mur du fond : Z=-7.5, X varie selon l'index
-        // Ancien à gauche (X=-7) → récent à droite (X=7)
-        const spacing = 14 / Math.max(totalOfType - 1, 1); // Espace entre portes
-        const x = -7 + (index * spacing);
+        // Mur du fond : Z = -roomDepth/2, X varie selon l'index
+        // Ancien à gauche (X négatif) → récent à droite (X positif)
+        const backWallZ = -roomDepth / 2;
+        const availableWidth = roomWidth - 4; // Marge de 4 unités (gauche + droite)
+        const spacing = availableWidth / Math.max(totalOfType - 1, 1);
+        const startX = -availableWidth / 2;
+        const x = startX + (index * spacing);
+
         return {
-            position: new THREE.Vector3(x, 0, -7.5),
+            position: new THREE.Vector3(x, 0, backWallZ),
             rotation: 0  // Face vers le joueur
         };
     }
@@ -89,9 +137,9 @@ function calculateDoorPosition(
 let doors: Door[] = [];
 
 /**
- * Initialise les portes dynamiquement depuis l'API
+ * Initialise la salle et les portes dynamiquement depuis l'API
  */
-async function initializeDoors(): Promise<void> {
+async function initializeWorld(): Promise<void> {
     try {
         console.log("🚪 Chargement des périodes depuis l'API...");
         const cvData = await api.getCV();
@@ -105,12 +153,32 @@ async function initializeDoors(): Promise<void> {
         const formations = sortedPeriods.filter(p => p.type === 'formation');
         const travaux = sortedPeriods.filter(p => p.type === 'travail');
 
+        // Calcul des dimensions optimales de la salle
+        const roomDimensions = calculateRoomDimensions(
+            formations.length,
+            travaux.length
+        );
+
+        console.log(`📐 Dimensions de la salle : ${roomDimensions.width}x${roomDimensions.depth}x${roomDimensions.height}`);
+
+        // Crée le hall avec les dimensions calculées
+        const hall = new Room({
+            width: roomDimensions.width,
+            depth: roomDimensions.depth,
+            height: roomDimensions.height,
+            floorColor: "#2a2a3a",
+            wallColor: "#3a3a4a",
+        });
+        engine.add(hall.getObject());
+
         // Génération des portes de formation
         formations.forEach((periode, index) => {
             const { position, rotation } = calculateDoorPosition(
                 'formation',
                 index,
-                formations.length
+                formations.length,
+                roomDimensions.width,
+                roomDimensions.depth
             );
 
             const door = new Door({
@@ -131,7 +199,9 @@ async function initializeDoors(): Promise<void> {
             const { position, rotation } = calculateDoorPosition(
                 'travail',
                 index,
-                travaux.length
+                travaux.length,
+                roomDimensions.width,
+                roomDimensions.depth
             );
 
             const door = new Door({
@@ -151,7 +221,17 @@ async function initializeDoors(): Promise<void> {
 
     } catch (error) {
         console.error("❌ Erreur lors du chargement des portes:", error);
-        // Fallback : créer au moins une porte d'exemple
+
+        // Fallback : créer une salle par défaut avec une porte d'erreur
+        const defaultHall = new Room({
+            width: 20,
+            depth: 15,
+            height: 5,
+            floorColor: "#2a2a3a",
+            wallColor: "#3a3a4a",
+        });
+        engine.add(defaultHall.getObject());
+
         const fallbackDoor = new Door({
             id: "error",
             title: "Erreur de chargement",
@@ -164,8 +244,8 @@ async function initializeDoors(): Promise<void> {
     }
 }
 
-// Initialisation des portes (attend le chargement de l'API)
-await initializeDoors();
+// Initialisation du monde (salle + portes)
+await initializeWorld();
 
 // Crée le joueur
 const player = new Player(engine.getCamera(), input, {
