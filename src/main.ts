@@ -85,32 +85,87 @@ function calculateDoorPosition(
     }
 }
 
-// Crée les 3 portes
-const doors: Door[] = [
-    new Door({
-        id: "ensicaen",
-        title: "ENSICAEN",
-        subtitle: "2017 - 2020",
-        position: new THREE.Vector3(-5, 0, -7),
-        color: "#4a6741",
-    }),
-    new Door({
-        id: "nxp",
-        title: "NXP Semiconductors",
-        subtitle: "2017 - 2020",
-        position: new THREE.Vector3(0, 0, -7),
-        color: "#6b4423",
-    }),
-    new Door({
-        id: "genoway",
-        title: "genOway",
-        subtitle: "2022 - Présent",
-        position: new THREE.Vector3(5, 0, -7),
-        color: "#234b6b",
-    }),
-];
+// Chargement dynamique des portes depuis l'API
+let doors: Door[] = [];
 
-doors.forEach((door) => engine.add(door.getObject()));
+/**
+ * Initialise les portes dynamiquement depuis l'API
+ */
+async function initializeDoors(): Promise<void> {
+    try {
+        console.log("🚪 Chargement des périodes depuis l'API...");
+        const cvData = await api.getCV();
+
+        // Tri chronologique par date de début
+        const sortedPeriods = cvData.periodes.sort((a, b) => {
+            return a.dates.debut.localeCompare(b.dates.debut);
+        });
+
+        // Séparation par type
+        const formations = sortedPeriods.filter(p => p.type === 'formation');
+        const travaux = sortedPeriods.filter(p => p.type === 'travail');
+
+        // Génération des portes de formation
+        formations.forEach((periode, index) => {
+            const { position, rotation } = calculateDoorPosition(
+                'formation',
+                index,
+                formations.length
+            );
+
+            const door = new Door({
+                id: periode.id,
+                title: periode.titre,
+                subtitle: `${periode.dates.debut} - ${periode.dates.fin}`,
+                position: position,
+                rotation: rotation,
+                color: "#4a6741"  // Vert pour formations
+            });
+
+            doors.push(door);
+            engine.add(door.getObject());
+        });
+
+        // Génération des portes de travail
+        travaux.forEach((periode, index) => {
+            const { position, rotation } = calculateDoorPosition(
+                'travail',
+                index,
+                travaux.length
+            );
+
+            const door = new Door({
+                id: periode.id,
+                title: periode.titre,
+                subtitle: `${periode.dates.debut} - ${periode.dates.fin}`,
+                position: position,
+                rotation: rotation,
+                color: "#6b4423"  // Marron pour travail
+            });
+
+            doors.push(door);
+            engine.add(door.getObject());
+        });
+
+        console.log(`✅ ${doors.length} portes générées (${formations.length} formations, ${travaux.length} travaux)`);
+
+    } catch (error) {
+        console.error("❌ Erreur lors du chargement des portes:", error);
+        // Fallback : créer au moins une porte d'exemple
+        const fallbackDoor = new Door({
+            id: "error",
+            title: "Erreur de chargement",
+            subtitle: "API inaccessible",
+            position: new THREE.Vector3(0, 0, -7.5),
+            color: "#ff0000"
+        });
+        doors.push(fallbackDoor);
+        engine.add(fallbackDoor.getObject());
+    }
+}
+
+// Initialisation des portes (attend le chargement de l'API)
+await initializeDoors();
 
 // Crée le joueur
 const player = new Player(engine.getCamera(), input, {
