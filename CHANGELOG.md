@@ -4,10 +4,22 @@ Toutes les modifications notables de ce projet sont documentées ici.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
-## [Unreleased]
+## [0.3.0] - 2024-12-14
+
+## [0.4.0]
 
 ### Added
 
+- Système de salles de période : chaque porte mène à une salle 3D dédiée
+- PeriodRoom : génération procédurale de salles basées sur les données de période
+- Cubes de projets interactifs avec overlay de détails (nom, description, technos)
+- Trophées de compétences décoratifs sur les murs latéraux
+- Téléporteur au fond de chaque salle pour retour au hall
+- RoomManager pour gestion des transitions entre hall et salles
+- Portes visitées restent visuellement ouvertes (animation rotation panneau)
+- Touche Escape pour sortir d'une salle de période
+- Transition instantanée entre hall et salles (toggle visibility)
+- Retour au hall à la position d'origine (0, 0, 5)
 - Chargement dynamique des portes depuis l'API au démarrage
 - Positionnement automatique des portes selon leur type (formation/travail)
 - Support du champ `type` dans l'interface Periode
@@ -29,13 +41,20 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Espacement dynamique des portes selon leur nombre et les dimensions de la salle
 - Les positions des portes sont calculées relativement aux dimensions de la salle (-width/2, -depth/2)
 
+### Fixed
+
+- Animation d'ouverture des portes : pivot correct sur le bord gauche (rotation -90°)
+- Priorité touche Escape : ferme d'abord les overlays avant de sortir d'une salle
+- Nettoyage des labels CSS2D lors du retour au hall (plus de texte fantôme)
+- Poignées de porte ajoutées des deux côtés (avant et arrière) pour plus de réalisme
+
 ### Technical
 
 - Ajout du champ `type: 'formation' | 'travail'` à l'interface Periode
 - Utilisation du top-level await pour initializeWorld()
 - Les portes de formation utilisent une rotation de 90° (mur gauche)
 - Les portes de travail utilisent une rotation de 0° (mur du fond)
-- Algorithme de dimensionnement : minSpacing * doorCount + margins (avec min/max)
+- Algorithme de dimensionnement : minSpacing \* doorCount + margins (avec min/max)
 
 ## [0.3.0] - 2024-12-14
 
