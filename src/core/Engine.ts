@@ -148,6 +148,13 @@ export class Engine {
     }
 
     /**
+     * Retire un objet de la scène
+     */
+    public remove(object: THREE.Object3D): void {
+        this.scene.remove(object);
+    }
+
+    /**
      * Retourne la scène (pour accès externe si besoin)
      */
     public getScene(): THREE.Scene {

@@ -217,8 +217,15 @@ export class Player {
         return this.group.position.clone();
     }
 
-    public setPosition(position: THREE.Vector3): void {
+    public setPosition(position: THREE.Vector3, rotation?: number): void {
         this.group.position.copy(position);
+
+        if (rotation !== undefined) {
+            this.characterFacing = rotation;
+            this.cameraAngle = rotation;
+            this.avatar.rotation.y = rotation;
+        }
+
         this.updateCamera(0, true);
     }
 

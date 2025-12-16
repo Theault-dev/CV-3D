@@ -10,6 +10,9 @@ import { HUD } from "./ui/HUD";
 import { OverlayManager } from "./ui/OverlayManager";
 import { KeyboardIndicator } from "./ui/KeyboardIndicator";
 import { ApiService } from "./services/ApiService";
+import { RoomManager } from "./world/RoomManager";
+import { ProjectCube } from "./world/ProjectCube";
+import type { Projet } from "./data/types";
 
 // Crée le moteur 3D et l'input manager
 const engine = new Engine();
@@ -139,7 +142,9 @@ let doors: Door[] = [];
 /**
  * Initialise la salle et les portes dynamiquement depuis l'API
  */
-async function initializeWorld(): Promise<void> {
+async function initializeWorld(): Promise<THREE.Group> {
+    const hallGroup = new THREE.Group();
+
     try {
         console.log("🚪 Chargement des périodes depuis l'API...");
         const cvData = await api.getCV();
@@ -171,7 +176,7 @@ async function initializeWorld(): Promise<void> {
             floorColor: "#2a2a3a",
             wallColor: "#3a3a4a",
         });
-        engine.add(hall.getObject());
+        hallGroup.add(hall.getObject());
 
         // Génération des portes de formation
         formations.forEach((periode, index) => {
@@ -193,7 +198,7 @@ async function initializeWorld(): Promise<void> {
             });
 
             doors.push(door);
-            engine.add(door.getObject());
+            hallGroup.add(door.getObject());
         });
 
         // Génération des portes de travail
@@ -216,12 +221,17 @@ async function initializeWorld(): Promise<void> {
             });
 
             doors.push(door);
-            engine.add(door.getObject());
+            hallGroup.add(door.getObject());
         });
 
         console.log(
             `✅ ${doors.length} portes générées (${formations.length} formations, ${travaux.length} travaux)`,
         );
+
+        // Ajouter le hallGroup à la scène
+        engine.add(hallGroup);
+
+        return hallGroup;
     } catch (error) {
         console.error("❌ Erreur lors du chargement des portes:", error);
 
@@ -233,7 +243,7 @@ async function initializeWorld(): Promise<void> {
             floorColor: "#2a2a3a",
             wallColor: "#3a3a4a",
         });
-        engine.add(defaultHall.getObject());
+        hallGroup.add(defaultHall.getObject());
 
         const fallbackDoor = new Door({
             id: "error",
@@ -243,12 +253,16 @@ async function initializeWorld(): Promise<void> {
             color: "#ff0000",
         });
         doors.push(fallbackDoor);
-        engine.add(fallbackDoor.getObject());
+        hallGroup.add(fallbackDoor.getObject());
+
+        engine.add(hallGroup);
+
+        return hallGroup;
     }
 }
 
 // Initialisation du monde (salle + portes)
-await initializeWorld();
+const hallGroup = await initializeWorld();
 
 // Crée le joueur
 const player = new Player(engine.getCamera(), input, {
@@ -256,6 +270,12 @@ const player = new Player(engine.getCamera(), input, {
     moveSpeed: 5,
 });
 engine.add(player.getObject());
+
+// Crée le gestionnaire de salles
+const roomManager = new RoomManager(engine, hallGroup, player);
+
+// Connecte le room manager à l'input manager (pour Escape)
+input.setRoomManager(roomManager);
 
 // Porte actuellement proche
 let nearbyDoor: Door | null = null;
@@ -265,24 +285,43 @@ async function enterDoor(door: Door): Promise<void> {
     const doorId = door.getId();
 
     try {
+        // Cacher le prompt pendant le chargement
+        interactionPrompt.hide();
+
+        // Charger les données de la période
         const periode = await api.getPeriode(doorId);
 
-        // Créer le contenu de l'overlay
-        const content = document.createElement("div");
-        content.innerHTML = `
-            <h1>${periode.titre}</h1>
-            <h2>${periode.lieu}</h2>
-            <p>${periode.dates.debut} - ${periode.dates.fin}</p>
-            <p>${periode.description}</p>
-            <p>${periode.competences}</p>
-            <p>${periode.projets}</p>
-        `;
+        // Entrer dans la salle
+        await roomManager.enterPeriodRoom(periode);
 
-        // Ouvrir l'overlay (remplace le alert())
-        overlayManager.open(content);
+        // Marquer la porte comme ouverte
+        door.setOpen(true);
     } catch (error) {
         console.error("❌ Erreur API:", error);
+
+        // Afficher overlay d'erreur
+        const content = document.createElement("div");
+        content.innerHTML = `
+            <h1>Erreur</h1>
+            <p>Impossible de charger la période.</p>
+        `;
+        overlayManager.open(content);
     }
+}
+
+// Fonction pour afficher les détails d'un projet
+function showProjectOverlay(projet: Projet): void {
+    const content = document.createElement("div");
+    content.className = "project-overlay";
+    content.innerHTML = `
+        <h1>${projet.nom}</h1>
+        <p>${projet.description}</p>
+        <h3>Technologies</h3>
+        <ul>
+            ${projet.technos.map((t) => `<li>${t}</li>`).join("")}
+        </ul>
+    `;
+    overlayManager.open(content);
 }
 
 // Boucle de mise à jour
@@ -290,28 +329,76 @@ engine.onUpdate((delta) => {
     player.update(delta);
 
     const playerPos = player.getPosition();
-    let foundDoor: Door | null = null;
 
-    for (const door of doors) {
-        if (door.isNear(playerPos, 2.5)) {
-            foundDoor = door;
-            door.highlight(true);
-        } else {
-            door.highlight(false);
+    // === MODE HALL ===
+    if (roomManager.isInHall()) {
+        let foundDoor: Door | null = null;
+
+        for (const door of doors) {
+            if (door.isNear(playerPos, 2.5)) {
+                foundDoor = door;
+                door.highlight(true);
+            } else {
+                door.highlight(false);
+            }
+        }
+
+        if (foundDoor !== nearbyDoor) {
+            nearbyDoor = foundDoor;
+            if (nearbyDoor) {
+                interactionPrompt.show("Entrer");
+            } else {
+                interactionPrompt.hide();
+            }
+        }
+
+        if (nearbyDoor && input.isKeyJustPressed("e")) {
+            enterDoor(nearbyDoor);
         }
     }
 
-    if (foundDoor !== nearbyDoor) {
-        nearbyDoor = foundDoor;
-        if (nearbyDoor) {
-            interactionPrompt.show("Entrer");
+    // === MODE PERIOD ROOM ===
+    if (roomManager.isInPeriodRoom()) {
+        const periodRoom = roomManager.getActivePeriodRoom();
+        if (!periodRoom) return;
+
+        // 1. Check interaction avec cubes de projets
+        const projectCubes = periodRoom.getProjectCubes();
+        let foundCube: ProjectCube | null = null;
+
+        for (const cube of projectCubes) {
+            if (cube.isNear(playerPos, 1.5)) {
+                foundCube = cube;
+                cube.highlight(true);
+            } else {
+                cube.highlight(false);
+            }
+        }
+
+        // 2. Check interaction avec téléporteur
+        const teleporter = periodRoom.getTeleporter();
+        let onTeleporter = false;
+
+        if (teleporter && teleporter.isNear(playerPos, 2)) {
+            onTeleporter = true;
+            teleporter.update(delta); // Animation rotation
+        }
+
+        // 3. Gestion du prompt
+        if (foundCube) {
+            interactionPrompt.show("Examiner");
+            if (input.isKeyJustPressed("e")) {
+                showProjectOverlay(foundCube.getProjet());
+            }
+        } else if (onTeleporter) {
+            interactionPrompt.show("Retour au hall");
+            if (input.isKeyJustPressed("e")) {
+                roomManager.exitToHall();
+                interactionPrompt.hide();
+            }
         } else {
             interactionPrompt.hide();
         }
-    }
-
-    if (nearbyDoor && input.isKeyJustPressed("e")) {
-        enterDoor(nearbyDoor);
     }
 });
 

@@ -26,6 +26,7 @@ export class Door {
     private group: THREE.Group;
     private id: string;
     private isHighlighted: boolean = false;
+    private isOpen: boolean = false;
 
     // Dimensions de la porte
     private static readonly WIDTH = 1.5;
@@ -106,28 +107,48 @@ export class Door {
         topFrame.position.set(0, Door.HEIGHT + frameThickness / 2, 0);
         this.group.add(topFrame);
 
-        // Panneau de la porte
+        // Panneau de la porte avec pivot sur le bord gauche
+        const doorPanelGroup = new THREE.Group();
+        doorPanelGroup.name = "doorPanel";
+
         const doorPanel = new THREE.Mesh(
             new THREE.BoxGeometry(Door.WIDTH, Door.HEIGHT, Door.DEPTH * 0.5),
             this.doorMaterial,
         );
-        doorPanel.position.set(0, Door.HEIGHT / 2, 0);
-        this.group.add(doorPanel);
+        // Positionner le panneau pour que le pivot soit sur le bord gauche
+        doorPanel.position.x = Door.WIDTH / 2;
+        doorPanel.position.y = Door.HEIGHT / 2;
+        doorPanelGroup.add(doorPanel);
 
-        // Poignée
+        // Positionner le groupe sur le bord gauche du cadre
+        doorPanelGroup.position.set(-Door.WIDTH / 2, 0, 0);
+        this.group.add(doorPanelGroup);
+
+        // Poignées (attachées au panneau) - une de chaque côté
         const handleGeometry = new THREE.SphereGeometry(0.08, 16, 16);
         const handleMaterial = new THREE.MeshStandardMaterial({
             color: "#d4af37",
             metalness: 0.8,
             roughness: 0.2,
         });
-        const handle = new THREE.Mesh(handleGeometry, handleMaterial);
-        handle.position.set(
-            Door.WIDTH / 2 - 0.2,
+
+        // Poignée avant (côté visible)
+        const handleFront = new THREE.Mesh(handleGeometry, handleMaterial);
+        handleFront.position.set(
+            Door.WIDTH - 0.2,
             Door.HEIGHT / 2,
             Door.DEPTH * 0.3,
         );
-        this.group.add(handle);
+        doorPanelGroup.add(handleFront);
+
+        // Poignée arrière (côté intérieur)
+        const handleBack = new THREE.Mesh(handleGeometry, handleMaterial);
+        handleBack.position.set(
+            Door.WIDTH - 0.2,
+            Door.HEIGHT / 2,
+            -Door.DEPTH * 0.3,
+        );
+        doorPanelGroup.add(handleBack);
     }
 
     /**
@@ -188,5 +209,28 @@ export class Door {
         const doorPos = this.group.position.clone();
         doorPos.y = position.y; // Ignore la hauteur
         return position.distanceTo(doorPos) < threshold;
+    }
+
+    /**
+     * Ouvre ou ferme la porte (animation du panneau)
+     */
+    public setOpen(open: boolean): void {
+        if (this.isOpen === open) return;
+        this.isOpen = open;
+
+        // Trouver le panneau de la porte
+        const doorPanel = this.group.getObjectByName("doorPanel");
+
+        if (doorPanel) {
+            // Rotation sur Y de -90° pour ouvrir (sens inverse)
+            doorPanel.rotation.y = open ? -Math.PI / 2 : 0;
+        }
+    }
+
+    /**
+     * Vérifie si la porte est ouverte
+     */
+    public getIsOpen(): boolean {
+        return this.isOpen;
     }
 }

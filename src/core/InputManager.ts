@@ -1,5 +1,6 @@
 import type { OverlayManager } from "../ui/OverlayManager";
 import type { KeyboardIndicator } from "../ui/KeyboardIndicator";
+import type { RoomManager } from "../world/RoomManager";
 import { ContactForm } from "../ui/ContactForm";
 
 /**
@@ -31,6 +32,9 @@ export class InputManager {
     // Référence à l'indicateur de touches de déplacement
     private keyboardIndicator: KeyboardIndicator | null = null;
 
+    // Référence au gestionnaire de salles (pour gérer Escape)
+    private roomManager: RoomManager | null = null;
+
     constructor() {
         // Écoute les événements clavier
         window.addEventListener("keydown", this.onKeyDown.bind(this));
@@ -58,6 +62,14 @@ export class InputManager {
     }
 
     /**
+     * Définit le gestionnaire de salles
+     * Doit être appelé après la création du RoomManager
+     */
+    public setRoomManager(roomManager: RoomManager): void {
+        this.roomManager = roomManager;
+    }
+
+    /**
      * Appelé quand une touche est enfoncée
      */
     private onKeyDown(event: KeyboardEvent): void {
@@ -66,13 +78,20 @@ export class InputManager {
 
         const key = event.key.toLowerCase();
 
-        // Gestion spéciale de la touche Échap avec les overlays
+        // Gestion spéciale de la touche Échap
         if (key === "escape") {
-            // Si un overlay est actif, on le ferme et on bloque tout le reste
+            // Priorité 1 : Fermer un overlay
             if (this.overlayManager?.hasActiveOverlay()) {
                 this.overlayManager.close();
                 event.preventDefault();
-                return; // Bloque le traitement normal de la touche
+                return;
+            }
+
+            // Priorité 2 : Sortir d'une salle de période
+            if (this.roomManager && this.roomManager.isInPeriodRoom()) {
+                this.roomManager.exitToHall();
+                event.preventDefault();
+                return;
             }
         }
 
