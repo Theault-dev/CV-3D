@@ -136,4 +136,29 @@ export class Room {
             height: this.config.height,
         };
     }
+
+    /**
+     * Vérifie si une position entre en collision avec les murs de la salle
+     * @param position - Position à tester
+     * @param playerRadius - Rayon du joueur (défaut: 0.5)
+     * @returns true si collision, false sinon
+     */
+    public checkCollision(
+        position: THREE.Vector3,
+        playerRadius: number = 0.5,
+    ): boolean {
+        // Limites de la salle avec marge pour le rayon du joueur
+        const minX = -this.config.width / 2 + playerRadius;
+        const maxX = this.config.width / 2 - playerRadius;
+        const minZ = -this.config.depth / 2 + playerRadius;
+        const maxZ = this.config.depth / 2 - playerRadius;
+
+        // Vérifie si la position est hors limites
+        return (
+            position.x < minX ||
+            position.x > maxX ||
+            position.z < minZ ||
+            position.z > maxZ
+        );
+    }
 }

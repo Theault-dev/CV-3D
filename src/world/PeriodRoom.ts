@@ -58,6 +58,9 @@ export class PeriodRoom {
             color: "#2a2a3a",
             roughness: 0.8,
             side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.3,
+            depthWrite: true,
         });
 
         // Mur du fond (Z négatif)
@@ -86,7 +89,14 @@ export class PeriodRoom {
         rightWall.position.set(PeriodRoom.WIDTH / 2, PeriodRoom.HEIGHT / 2, 0);
         this.group.add(rightWall);
 
-        // Mur de devant (Z positif) - pas créé pour permettre l'entrée
+        // Mur de devant (Z positif) - transparent pour effet vitrine
+        const frontWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(PeriodRoom.WIDTH, PeriodRoom.HEIGHT),
+            wallMaterial,
+        );
+        frontWall.rotation.y = Math.PI;
+        frontWall.position.set(0, PeriodRoom.HEIGHT / 2, PeriodRoom.DEPTH / 2);
+        this.group.add(frontWall);
     }
 
     /**
@@ -231,5 +241,30 @@ export class PeriodRoom {
      */
     public getProjectCubes(): ProjectCube[] {
         return this.projectCubes;
+    }
+
+    /**
+     * Vérifie si une position entre en collision avec les murs de la salle
+     * @param position - Position à tester
+     * @param playerRadius - Rayon du joueur (défaut: 0.5)
+     * @returns true si collision, false sinon
+     */
+    public checkCollision(
+        position: THREE.Vector3,
+        playerRadius: number = 0.5,
+    ): boolean {
+        // Limites de la salle avec marge pour le rayon du joueur
+        const minX = -PeriodRoom.WIDTH / 2 + playerRadius;
+        const maxX = PeriodRoom.WIDTH / 2 - playerRadius;
+        const minZ = -PeriodRoom.DEPTH / 2 + playerRadius;
+        const maxZ = PeriodRoom.DEPTH / 2 - playerRadius;
+
+        // Vérifie si la position est hors limites
+        return (
+            position.x < minX ||
+            position.x > maxX ||
+            position.z < minZ ||
+            position.z > maxZ
+        );
     }
 }

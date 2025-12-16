@@ -139,6 +139,9 @@ function calculateDoorPosition(
 // Chargement dynamique des portes depuis l'API
 let doors: Door[] = [];
 
+// Référence au hall pour les collisions
+let hallRoom: Room | null = null;
+
 /**
  * Initialise la salle et les portes dynamiquement depuis l'API
  */
@@ -169,14 +172,14 @@ async function initializeWorld(): Promise<THREE.Group> {
         );
 
         // Crée le hall avec les dimensions calculées
-        const hall = new Room({
+        hallRoom = new Room({
             width: roomDimensions.width,
             depth: roomDimensions.depth,
             height: roomDimensions.height,
             floorColor: "#2a2a3a",
             wallColor: "#3a3a4a",
         });
-        hallGroup.add(hall.getObject());
+        hallGroup.add(hallRoom.getObject());
 
         // Génération des portes de formation
         formations.forEach((periode, index) => {
@@ -236,14 +239,14 @@ async function initializeWorld(): Promise<THREE.Group> {
         console.error("❌ Erreur lors du chargement des portes:", error);
 
         // Fallback : créer une salle par défaut avec une porte d'erreur
-        const defaultHall = new Room({
+        hallRoom = new Room({
             width: 20,
             depth: 15,
             height: 5,
             floorColor: "#2a2a3a",
             wallColor: "#3a3a4a",
         });
-        hallGroup.add(defaultHall.getObject());
+        hallGroup.add(hallRoom.getObject());
 
         const fallbackDoor = new Door({
             id: "error",
@@ -271,8 +274,13 @@ const player = new Player(engine.getCamera(), input, {
 });
 engine.add(player.getObject());
 
+// Configure les collisions pour le hall
+if (hallRoom) {
+    player.setCollisionChecker((pos) => hallRoom!.checkCollision(pos));
+}
+
 // Crée le gestionnaire de salles
-const roomManager = new RoomManager(engine, hallGroup, player);
+const roomManager = new RoomManager(engine, hallGroup, player, hallRoom);
 
 // Connecte le room manager à l'input manager (pour Escape)
 input.setRoomManager(roomManager);

@@ -3,6 +3,7 @@ import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { Engine } from "../core/Engine";
 import { Player } from "../player/Player";
 import { PeriodRoom } from "./PeriodRoom";
+import { Room } from "./Room";
 import type { Periode } from "../data/types";
 
 /**
@@ -20,13 +21,20 @@ export interface RoomState {
 export class RoomManager {
     private engine: Engine;
     private hallGroup: THREE.Group;
+    private hallRoom: Room | null;
     private state: RoomState;
     private player: Player;
     private isTransitioning: boolean = false;
 
-    constructor(engine: Engine, hallGroup: THREE.Group, player: Player) {
+    constructor(
+        engine: Engine,
+        hallGroup: THREE.Group,
+        player: Player,
+        hallRoom: Room | null = null,
+    ) {
         this.engine = engine;
         this.hallGroup = hallGroup;
+        this.hallRoom = hallRoom;
         this.player = player;
 
         this.state = {
@@ -60,7 +68,12 @@ export class RoomManager {
             // 5. Marquer comme visitée
             this.state.visitedDoorIds.add(periode.id);
 
-            // 6. Changer l'état
+            // 6. Configurer les collisions pour la PeriodRoom
+            this.player.setCollisionChecker((pos) =>
+                periodRoom.checkCollision(pos),
+            );
+
+            // 7. Changer l'état
             this.state.currentRoom = "period";
         } finally {
             this.isTransitioning = false;
@@ -88,7 +101,14 @@ export class RoomManager {
         // 5. Téléporter à la position d'origine
         this.player.setPosition(new THREE.Vector3(0, 0, 5));
 
-        // 6. Changer l'état
+        // 6. Reconfigurer les collisions pour le hall
+        if (this.hallRoom) {
+            this.player.setCollisionChecker((pos) =>
+                this.hallRoom!.checkCollision(pos),
+            );
+        }
+
+        // 7. Changer l'état
         this.state.currentRoom = "hall";
     }
 
