@@ -4,9 +4,22 @@ Toutes les modifications notables de ce projet sont documentées ici.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
-## [0.3.0] - 2024-12-14
+## [Unreleased]
 
-## [0.4.0]
+### Added
+
+- Mur frontal transparent dans les salles de période (effet vitrine)
+- Système de collision avec les murs des salles de période et du hall
+- Détection automatique des limites de salle pour bloquer le joueur
+
+### Changed
+
+- Murs des salles de période rendus semi-transparents (opacité 30%)
+- `depthWrite: true` pour empêcher de voir à travers les murs
+- RoomManager gère maintenant les collisions automatiquement lors des transitions
+- Player vérifie les collisions avant tout déplacement
+
+## [0.4.0] - 2024-12-16
 
 ### Added
 

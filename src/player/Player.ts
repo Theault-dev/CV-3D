@@ -38,6 +38,10 @@ export class Player {
     // Vélocité pour le lissage
     private velocity = new THREE.Vector3();
 
+    // Fonction de vérification de collision (optionnelle)
+    private collisionChecker: ((position: THREE.Vector3) => boolean) | null =
+        null;
+
     constructor(
         camera: THREE.PerspectiveCamera,
         input: InputManager,
@@ -119,8 +123,20 @@ export class Player {
                     .copy(moveDirection)
                     .multiplyScalar(this.moveSpeed);
 
-                // Déplace le joueur
-                this.group.position.addScaledVector(this.velocity, delta);
+                // Calcule la nouvelle position
+                const newPosition = this.group.position
+                    .clone()
+                    .addScaledVector(this.velocity, delta);
+
+                // Vérifie la collision si un checker est défini
+                if (
+                    !this.collisionChecker ||
+                    !this.collisionChecker(newPosition)
+                ) {
+                    // Pas de collision, déplace le joueur
+                    this.group.position.copy(newPosition);
+                }
+                // Si collision, le joueur reste à sa position actuelle
 
                 // Calcule l'angle vers lequel le personnage doit tourner
                 let targetFacing: number;
@@ -231,5 +247,15 @@ export class Player {
 
     public getRotation(): number {
         return this.characterFacing;
+    }
+
+    /**
+     * Définit la fonction de vérification de collision
+     * @param checker - Fonction qui prend une position et retourne true si collision
+     */
+    public setCollisionChecker(
+        checker: ((position: THREE.Vector3) => boolean) | null,
+    ): void {
+        this.collisionChecker = checker;
     }
 }
