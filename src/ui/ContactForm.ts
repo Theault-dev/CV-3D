@@ -41,7 +41,7 @@ export class ContactForm {
     private element: HTMLDivElement;
 
     // Thème actuel du formulaire
-    private currentTheme: Theme = "minimalist";
+    private currentTheme: Theme = "terminal";
 
     // Service API pour envoyer les données
     private apiService: ApiService;
@@ -141,7 +141,7 @@ export class ContactForm {
     private getLabel(field: string): string {
         if (this.currentTheme === "terminal") {
             const labels: Record<string, string> = {
-                name: "[ NOM/ENTREPRISE ]",
+                name: "[ NOM OU ENTREPRISE ]",
                 email: "[ EMAIL ]",
                 subject: "[ SUJET ]",
                 message: "[ MESSAGE ]",
@@ -149,7 +149,7 @@ export class ContactForm {
             return labels[field] || field;
         } else {
             const labels: Record<string, string> = {
-                name: "Nom / Entreprise",
+                name: "Nom ou Entreprise",
                 email: "Email",
                 subject: "Sujet",
                 message: "Message",

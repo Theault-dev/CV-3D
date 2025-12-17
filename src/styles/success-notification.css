@@ -24,6 +24,8 @@
         0 0 0 1px rgba(255, 255, 255, 0.2);
     z-index: 2000;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    cursor: default;
 }
 
 .success-notification.show {

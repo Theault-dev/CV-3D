@@ -1,7 +1,8 @@
 /* Structure de base du formulaire */
 .contact-form {
-    width: 100%;
-    max-width: 600px;
+    width: 550px;
+    max-width: 90vw;
+    box-sizing: border-box;
     font-family:
         system-ui,
         -apple-system,
@@ -41,7 +42,6 @@
 .contact-form-content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
 /* Groupes de champs */
@@ -49,6 +49,20 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Réserve l'espace pour les messages d'erreur */
+.error-message {
+    display: block;
+    min-height: 50px;
+    max-width: 100%;
+    line-height: 1.4;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
 }
 
 /* === Thème Minimaliste === */
@@ -65,6 +79,7 @@
 
 .contact-form[data-theme="minimalist"] input,
 .contact-form[data-theme="minimalist"] textarea {
+    width: 100%;
     padding: 12px 16px;
     font-size: 15px;
     font-family: inherit;
@@ -73,6 +88,7 @@
     border-radius: 8px;
     color: #333333;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .contact-form[data-theme="minimalist"] input:focus,
@@ -89,6 +105,25 @@
     font-family: inherit;
 }
 
+/* Scrollbar personnalisée - Minimaliste */
+.contact-form[data-theme="minimalist"] textarea::-webkit-scrollbar {
+    width: 8px;
+}
+
+.contact-form[data-theme="minimalist"] textarea::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.contact-form[data-theme="minimalist"] textarea::-webkit-scrollbar-thumb {
+    background: #4a90d9;
+    border-radius: 4px;
+}
+
+.contact-form[data-theme="minimalist"] textarea::-webkit-scrollbar-thumb:hover {
+    background: #357abd;
+}
+
 /* Erreurs - Thème Minimaliste */
 .contact-form[data-theme="minimalist"] .form-group.has-error input,
 .contact-form[data-theme="minimalist"] .form-group.has-error textarea {
@@ -99,6 +134,7 @@
     font-size: 13px;
     color: #ff4444;
     margin-top: 4px;
+    min-height: 50px;
 }
 
 /* Bouton de soumission - Minimaliste */
@@ -159,6 +195,7 @@
 
 .contact-form[data-theme="terminal"] input,
 .contact-form[data-theme="terminal"] textarea {
+    width: 100%;
     padding: 12px 16px;
     font-size: 15px;
     font-family: "Courier New", Consolas, Monaco, monospace;
@@ -168,6 +205,7 @@
     color: #00ff00;
     box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
     transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .contact-form[data-theme="terminal"] input:focus,
@@ -185,6 +223,28 @@
     resize: vertical;
 }
 
+/* Scrollbar personnalisée - Terminal */
+.contact-form[data-theme="terminal"] textarea::-webkit-scrollbar {
+    width: 10px;
+}
+
+.contact-form[data-theme="terminal"] textarea::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border: 1px solid #00ff00;
+    border-radius: 2px;
+}
+
+.contact-form[data-theme="terminal"] textarea::-webkit-scrollbar-thumb {
+    background: #00ff00;
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+}
+
+.contact-form[data-theme="terminal"] textarea::-webkit-scrollbar-thumb:hover {
+    background: #33ff33;
+    box-shadow: 0 0 12px rgba(0, 255, 0, 0.8);
+}
+
 /* Erreurs - Thème Terminal */
 .contact-form[data-theme="terminal"] .form-group.has-error input,
 .contact-form[data-theme="terminal"] .form-group.has-error textarea {
@@ -198,6 +258,7 @@
     color: #ff3333;
     text-shadow: 0 0 8px rgba(255, 51, 51, 0.6);
     margin-top: 4px;
+    min-height: 60px;
 }
 
 /* Bouton de soumission - Terminal */
@@ -278,10 +339,7 @@
 /* Responsive : adaptation mobile */
 @media (max-width: 768px) {
     .contact-form {
+        width: 100%;
         max-width: 100%;
-    }
-
-    .contact-form-content {
-        gap: 16px;
     }
 }

@@ -78,6 +78,13 @@ export class InputManager {
 
         const key = event.key.toLowerCase();
 
+        // Si un input/textarea est focusé, on bloque toutes les touches d'action
+        // pour permettre la saisie normale
+        const activeElement = document.activeElement;
+        const isInputFocused =
+            activeElement instanceof HTMLInputElement ||
+            activeElement instanceof HTMLTextAreaElement;
+
         // Gestion spéciale de la touche Échap
         if (key === "escape") {
             // Priorité 1 : Fermer un overlay
@@ -96,7 +103,7 @@ export class InputManager {
         }
 
         // Gestion de la touche H pour afficher/masquer l'indicateur de touches
-        if (key === "h") {
+        if (key === "h" && !isInputFocused) {
             // Si un overlay est actif, on le ferme
             if (this.overlayManager?.hasActiveOverlay()) {
                 this.overlayManager.close();
@@ -111,7 +118,7 @@ export class InputManager {
         }
 
         // Gestion de la touche C pour ouvrir/fermer le formulaire de contact
-        if (key === "c") {
+        if (key === "c" && !isInputFocused) {
             // Si un overlay est actif, on le ferme
             if (this.overlayManager?.hasActiveOverlay()) {
                 this.overlayManager.close();
@@ -145,15 +152,15 @@ export class InputManager {
             return; // Bloque le traitement normal de la touche
         }
 
-        // Si un overlay est actif, on ne traite PAS les touches comme des commandes de jeu
-        // mais on les laisse se propager pour permettre la saisie dans les inputs
-        if (this.overlayManager?.hasActiveOverlay()) {
+        // Si un input est focusé OU si un overlay est actif,
+        // on ne traite PAS les touches comme des commandes de jeu
+        if (isInputFocused || this.overlayManager?.hasActiveOverlay()) {
             // Ne pas enregistrer les touches ni mettre à jour le mouvement
             // Les touches peuvent toujours être utilisées pour écrire dans les formulaires
             return;
         }
 
-        // Comportement normal : pas d'overlay actif
+        // Comportement normal : pas d'overlay actif et pas d'input focusé
         if (
             [
                 "z",
