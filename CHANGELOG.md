@@ -11,6 +11,9 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Mur frontal transparent dans les salles de période (effet vitrine)
 - Système de collision avec les murs des salles de période et du hall
 - Détection automatique des limites de salle pour bloquer le joueur
+- Scrollbars personnalisées pour le textarea du formulaire de contact
+    - Style bleu avec track gris clair pour le thème Minimaliste
+    - Style vert avec effet glow pour le thème Terminal
 
 ### Changed
 
@@ -18,6 +21,15 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - `depthWrite: true` pour empêcher de voir à travers les murs
 - RoomManager gère maintenant les collisions automatiquement lors des transitions
 - Player vérifie les collisions avant tout déplacement
+- Thème par défaut du formulaire de contact changé de Minimaliste à Terminal
+- Labels du formulaire : "Nom / Entreprise" → "Nom ou Entreprise"
+- Formulaire de contact rendu responsive (max-width: 90vw)
+
+### Fixed
+
+- Touches d'action (H, C) bloquées quand un input/textarea a le focus
+- Notification de succès rendue non-sélectionnable (user-select: none)
+- Messages d'erreur du formulaire : espace réservé pour éviter redimensionnement
 
 ## [0.4.0] - 2024-12-16
 

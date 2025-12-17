@@ -1,12 +1,12 @@
 /* === CSS Modulaire === */
 /* Tous les styles sont organisés en fichiers séparés pour une meilleure maintenabilité */
 
-@import './styles/base.css';
-@import './styles/door-labels.css';
-@import './styles/hud.css';
-@import './styles/overlay.css';
-@import './styles/contact-form.css';
-@import './styles/success-notification.css';
-@import './styles/key-button.css';
-@import './styles/keyboard-indicator.css';
-@import './styles/period-room.css';
+@import "./styles/base.css";
+@import "./styles/door-labels.css";
+@import "./styles/hud.css";
+@import "./styles/overlay.css";
+@import "./styles/contact-form.css";
+@import "./styles/success-notification.css";
+@import "./styles/key-button.css";
+@import "./styles/keyboard-indicator.css";
+@import "./styles/period-room.css";
