@@ -8,6 +8,9 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+- Chargement du modèle 3D du personnage depuis un fichier FBX (`/models/character.fbx`)
+- Support du FBXLoader de three-stdlib pour l'import de modèles FBX
+- Avatar temporaire affiché pendant le chargement du modèle FBX
 - Mur frontal transparent dans les salles de période (effet vitrine)
 - Système de collision avec les murs des salles de période et du hall
 - Détection automatique des limites de salle pour bloquer le joueur
@@ -17,6 +20,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Changed
 
+- Remplacement du modèle procédural du personnage (cubes) par un modèle FBX
+- Configuration automatique des ombres et matériaux pour le modèle FBX
+- Positionnement automatique du modèle avec les pieds au niveau du sol
+- Correction de l'orientation du modèle FBX pour correspondre au système de contrôle
 - Murs des salles de période rendus semi-transparents (opacité 30%)
 - `depthWrite: true` pour empêcher de voir à travers les murs
 - RoomManager gère maintenant les collisions automatiquement lors des transitions
