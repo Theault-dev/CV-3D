@@ -6,6 +6,8 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2024-12-21
+
 ### Added
 
 - Chargement du modèle 3D du personnage depuis un fichier FBX (`/models/character.fbx`)
