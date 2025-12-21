@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { FBXLoader } from "three-stdlib";
 import { InputManager } from "../core/InputManager";
 
 /**
@@ -59,8 +60,12 @@ export class Player {
         const startPos = config.startPosition ?? new THREE.Vector3(0, 0, 0);
         this.group.position.copy(startPos);
 
+        // Crée un avatar temporaire pendant le chargement
         this.avatar = this.createTempAvatar();
         this.group.add(this.avatar);
+
+        // Charge le modèle FBX de manière asynchrone
+        this.loadFBXModel();
 
         this.updateCamera(0, true); // Force la position initiale
     }
@@ -96,6 +101,63 @@ export class Player {
         avatarGroup.add(nose);
 
         return avatarGroup;
+    }
+
+    private async loadFBXModel(): Promise<void> {
+        const loader = new FBXLoader();
+
+        try {
+            const fbx = await loader.loadAsync("/models/character.fbx");
+
+            // Ajuste la taille du modèle si nécessaire
+            // La plupart des modèles FBX ont besoin d'être mis à l'échelle
+            fbx.scale.set(0.02, 0.02, 0.02);
+
+            // Calcule la position avant toute rotation
+            const box = new THREE.Box3().setFromObject(fbx);
+            const center = box.getCenter(new THREE.Vector3());
+
+            // Positionne le modèle : centré en X/Z, avec les pieds au niveau du sol
+            fbx.position.set(-center.x, -box.min.y, -center.z);
+
+            // Configure les matériaux pour utiliser les lumières de la scène
+            fbx.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach((mat) => {
+                                if (mat instanceof THREE.MeshStandardMaterial) {
+                                    mat.needsUpdate = true;
+                                }
+                            });
+                        } else if (
+                            child.material instanceof THREE.MeshStandardMaterial
+                        ) {
+                            child.material.needsUpdate = true;
+                        }
+                    }
+                }
+            });
+
+            // Crée un groupe pour contenir le modèle avec sa correction d'orientation
+            // Le FBX est placé dans un groupe enfant avec une rotation fixe de 180°
+            // tandis que le groupe parent (this.avatar) sera tourné par le système de contrôle
+            const avatarGroup = new THREE.Group();
+            fbx.rotation.y = Math.PI; // Correction fixe de l'orientation du modèle
+            avatarGroup.add(fbx);
+
+            // Remplace l'avatar temporaire par le nouveau groupe
+            this.group.remove(this.avatar);
+            this.avatar = avatarGroup;
+            this.group.add(this.avatar);
+
+            console.log("Modèle FBX chargé avec succès");
+        } catch (error) {
+            console.error("Erreur lors du chargement du modèle FBX:", error);
+            console.log("Utilisation de l'avatar temporaire par défaut");
+        }
     }
 
     public update(delta: number): void {
