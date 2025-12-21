@@ -6,6 +6,19 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Auto-recentrage automatique de la caméra après 2 secondes d'inactivité (style Zelda)
+- Paramètres configurables `idleThreshold` et `autoRecenterSpeed` pour l'auto-recentrage
+
+### Changed
+
+- Vitesse de suivi de la caméra augmentée de 75% (2.0 → 3.5 rad/s)
+- Caméra reste derrière le personnage lors des mouvements avant (3.5 rad/s)
+- Caméra reste derrière le personnage lors des reculs (3.5 rad/s)
+- Caméra plus rapide lors des strafes (1.2 → 2.1 rad/s, conserve le ratio 60%)
+- Amélioration du comportement de la caméra TPS pour un rendu plus dynamique
+
 ## [0.4.0] - 2024-12-21
 
 ### Added
