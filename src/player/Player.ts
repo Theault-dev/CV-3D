@@ -117,8 +117,12 @@ export class Player {
     private async loadFBXModel(): Promise<void> {
         try {
             // Charge le modèle via ModelLoader (avec cache et configuration automatique)
+            // const avatarGroup = await ModelLoader.loadFBX(
+            //     "/models/characters/AL_Standard.fbx",
+            //     0.015,
+            // );
             const avatarGroup = await ModelLoader.loadFBX(
-                "/models/characters/AL_Standard.fbx",
+                "/models/character.fbx",
                 0.015,
             );
 

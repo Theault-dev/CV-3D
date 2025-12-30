@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# Models
+**/*.fbx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

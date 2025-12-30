@@ -12,13 +12,25 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Configuration automatique des modèles : échelle, position, matériaux et ombres
 - Support du clonage de modèles pour instances multiples depuis le cache
 - Chargement de modèles de murs FBX (Wall_Empty.fbx) dans Room.ts
+- Positionnement automatique des segments de murs FBX pour couvrir toute la salle
+- Création de plusieurs instances de murs pour les murs du fond, gauche et droit
+- Orientation correcte des murs : mur du fond (180°), mur gauche (-90°), mur droit (90°)
+- Système d'adaptation automatique du sol aux dimensions réelles des murs FBX
+- Méthode updateFloorSize() pour redimensionner dynamiquement le sol après chargement des murs
+- Méthode repositionWalls() pour ajuster la position des murs selon les dimensions réelles
+- Paramètres de configuration manuels dans loadWallModels() (wallOffsets, wallOverlap)
 - Auto-recentrage automatique de la caméra après 2 secondes d'inactivité (style Zelda)
 - Paramètres configurables `idleThreshold` et `autoRecenterSpeed` pour l'auto-recentrage
 
 ### Changed
 
+- Changement du terme "travail" à "profession" dans tout le code
 - Room.ts charge maintenant les murs depuis des modèles FBX au lieu de géométries simples
 - Murs temporaires conservés pendant le chargement des modèles FBX
+- Optimisation du chargement : segments de murs clonés au lieu d'être rechargés (économie réseau)
+- Le sol s'adapte automatiquement aux dimensions réelles calculées des murs
+- Les murs sont repositionnés après calcul pour correspondre exactement aux bords du sol
+- Configuration centralisée en haut de loadWallModels() pour faciliter les ajustements
 - Refactorisation du chargement FBX dans Player.ts pour utiliser ModelLoader
 - Simplification de loadFBXModel() : délègue la configuration au service
 - Vitesse de suivi de la caméra augmentée de 75% (2.0 → 3.5 rad/s)
