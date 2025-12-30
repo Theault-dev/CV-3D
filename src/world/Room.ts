@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ModelLoader } from "../services/ModelLoader";
 
 /**
  * Configuration d'une pièce
@@ -40,6 +41,7 @@ export class Room {
 
         this.createFloor();
         this.createWalls();
+        this.loadWallModels(); // Charge les modèles FBX en arrière-plan
     }
 
     /**
@@ -61,7 +63,7 @@ export class Room {
     }
 
     /**
-     * Crée les 4 murs
+     * Crée les 4 murs (temporaires, seront remplacés par les modèles FBX)
      */
     private createWalls(): void {
         const wallMaterial = new THREE.MeshStandardMaterial({
@@ -80,6 +82,7 @@ export class Room {
             this.config.height / 2,
             -this.config.depth / 2,
         );
+        backWall.name = "tempWall_back";
         this.group.add(backWall);
 
         // Mur de devant (Z positif) - avec une ouverture pour entrer
@@ -96,6 +99,7 @@ export class Room {
             this.config.height / 2,
             0,
         );
+        leftWall.name = "tempWall_left";
         this.group.add(leftWall);
 
         // Mur droit (X positif)
@@ -109,7 +113,43 @@ export class Room {
             this.config.height / 2,
             0,
         );
+        rightWall.name = "tempWall_right";
         this.group.add(rightWall);
+    }
+
+    /**
+     * Charge les modèles FBX des murs et remplace les murs temporaires
+     */
+    private async loadWallModels(): Promise<void> {
+        try {
+            // Charge le modèle de mur
+            const wallModel = await ModelLoader.loadFBX(
+                "/models/walls/Wall_Empty.fbx",
+                0.01, // Échelle à ajuster
+            );
+
+            console.log("[Room] Modèle de mur chargé:", wallModel);
+
+            // Affiche les dimensions du modèle pour comprendre sa taille
+            const box = new THREE.Box3().setFromObject(wallModel);
+            const size = box.getSize(new THREE.Vector3());
+            console.log(
+                "[Room] Dimensions du modèle:",
+                size.x.toFixed(2),
+                size.y.toFixed(2),
+                size.z.toFixed(2),
+            );
+
+            // Pour tester, ajoutons le modèle au centre de la pièce
+            wallModel.position.set(0, 0, 0);
+            this.group.add(wallModel);
+            console.log("[Room] Modèle de mur ajouté au centre pour test");
+        } catch (error) {
+            console.warn(
+                "[Room] Impossible de charger les modèles de murs, utilisation des murs temporaires:",
+                error,
+            );
+        }
     }
 
     /**

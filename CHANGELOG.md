@@ -11,11 +11,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Service ModelLoader pour chargement de modèles FBX avec système de cache
 - Configuration automatique des modèles : échelle, position, matériaux et ombres
 - Support du clonage de modèles pour instances multiples depuis le cache
+- Chargement de modèles de murs FBX (Wall_Empty.fbx) dans Room.ts
 - Auto-recentrage automatique de la caméra après 2 secondes d'inactivité (style Zelda)
 - Paramètres configurables `idleThreshold` et `autoRecenterSpeed` pour l'auto-recentrage
 
 ### Changed
 
+- Room.ts charge maintenant les murs depuis des modèles FBX au lieu de géométries simples
+- Murs temporaires conservés pendant le chargement des modèles FBX
 - Refactorisation du chargement FBX dans Player.ts pour utiliser ModelLoader
 - Simplification de loadFBXModel() : délègue la configuration au service
 - Vitesse de suivi de la caméra augmentée de 75% (2.0 → 3.5 rad/s)
