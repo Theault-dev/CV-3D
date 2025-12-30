@@ -76,11 +76,11 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Transition instantanée entre hall et salles (toggle visibility)
 - Retour au hall à la position d'origine (0, 0, 5)
 - Chargement dynamique des portes depuis l'API au démarrage
-- Positionnement automatique des portes selon leur type (formation/travail)
+- Positionnement automatique des portes selon leur type (formation/profession)
 - Support du champ `type` dans l'interface Periode
 - Tri chronologique des portes par date de début
 - Placement des formations sur le mur gauche (ancien→récent de l'entrée vers le fond)
-- Placement des travaux sur le mur du fond (ancien→récent de gauche à droite)
+- Placement des professions sur le mur du fond (ancien→récent de gauche à droite)
 - Fonction calculateRoomDimensions() pour ajuster la taille de la salle selon le nombre de portes
 - Fonction calculateDoorPosition() pour calcul automatique des positions avec dimensions dynamiques
 - Fonction initializeWorld() asynchrone pour chargement API et création de la salle
@@ -105,10 +105,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Technical
 
-- Ajout du champ `type: 'formation' | 'travail'` à l'interface Periode
+- Ajout du champ `type: 'formation' | 'profession'` à l'interface Periode
 - Utilisation du top-level await pour initializeWorld()
 - Les portes de formation utilisent une rotation de 90° (mur gauche)
-- Les portes de travail utilisent une rotation de 0° (mur du fond)
+- Les portes de profession utilisent une rotation de 0° (mur du fond)
 - Algorithme de dimensionnement : minSpacing \* doorCount + margins (avec min/max)
 
 ## [0.3.0] - 2024-12-14
