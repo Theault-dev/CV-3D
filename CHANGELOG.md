@@ -8,11 +8,16 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+- Service ModelLoader pour chargement de modèles FBX avec système de cache
+- Configuration automatique des modèles : échelle, position, matériaux et ombres
+- Support du clonage de modèles pour instances multiples depuis le cache
 - Auto-recentrage automatique de la caméra après 2 secondes d'inactivité (style Zelda)
 - Paramètres configurables `idleThreshold` et `autoRecenterSpeed` pour l'auto-recentrage
 
 ### Changed
 
+- Refactorisation du chargement FBX dans Player.ts pour utiliser ModelLoader
+- Simplification de loadFBXModel() : délègue la configuration au service
 - Vitesse de suivi de la caméra augmentée de 75% (2.0 → 3.5 rad/s)
 - Caméra reste derrière le personnage lors des mouvements avant (3.5 rad/s)
 - Caméra reste derrière le personnage lors des reculs (3.5 rad/s)
