@@ -8,11 +8,31 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+- Service ModelLoader pour chargement de modèles FBX avec système de cache
+- Configuration automatique des modèles : échelle, position, matériaux et ombres
+- Support du clonage de modèles pour instances multiples depuis le cache
+- Chargement de modèles de murs FBX (Wall_Empty.fbx) dans Room.ts
+- Positionnement automatique des segments de murs FBX pour couvrir toute la salle
+- Création de plusieurs instances de murs pour les murs du fond, gauche et droit
+- Orientation correcte des murs : mur du fond (180°), mur gauche (-90°), mur droit (90°)
+- Système d'adaptation automatique du sol aux dimensions réelles des murs FBX
+- Méthode updateFloorSize() pour redimensionner dynamiquement le sol après chargement des murs
+- Méthode repositionWalls() pour ajuster la position des murs selon les dimensions réelles
+- Paramètres de configuration manuels dans loadWallModels() (wallOffsets, wallOverlap)
 - Auto-recentrage automatique de la caméra après 2 secondes d'inactivité (style Zelda)
 - Paramètres configurables `idleThreshold` et `autoRecenterSpeed` pour l'auto-recentrage
 
 ### Changed
 
+- Changement du terme "travail" à "profession" dans tout le code
+- Room.ts charge maintenant les murs depuis des modèles FBX au lieu de géométries simples
+- Murs temporaires conservés pendant le chargement des modèles FBX
+- Optimisation du chargement : segments de murs clonés au lieu d'être rechargés (économie réseau)
+- Le sol s'adapte automatiquement aux dimensions réelles calculées des murs
+- Les murs sont repositionnés après calcul pour correspondre exactement aux bords du sol
+- Configuration centralisée en haut de loadWallModels() pour faciliter les ajustements
+- Refactorisation du chargement FBX dans Player.ts pour utiliser ModelLoader
+- Simplification de loadFBXModel() : délègue la configuration au service
 - Vitesse de suivi de la caméra augmentée de 75% (2.0 → 3.5 rad/s)
 - Caméra reste derrière le personnage lors des mouvements avant (3.5 rad/s)
 - Caméra reste derrière le personnage lors des reculs (3.5 rad/s)
@@ -68,11 +88,11 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Transition instantanée entre hall et salles (toggle visibility)
 - Retour au hall à la position d'origine (0, 0, 5)
 - Chargement dynamique des portes depuis l'API au démarrage
-- Positionnement automatique des portes selon leur type (formation/travail)
+- Positionnement automatique des portes selon leur type (formation/profession)
 - Support du champ `type` dans l'interface Periode
 - Tri chronologique des portes par date de début
 - Placement des formations sur le mur gauche (ancien→récent de l'entrée vers le fond)
-- Placement des travaux sur le mur du fond (ancien→récent de gauche à droite)
+- Placement des professions sur le mur du fond (ancien→récent de gauche à droite)
 - Fonction calculateRoomDimensions() pour ajuster la taille de la salle selon le nombre de portes
 - Fonction calculateDoorPosition() pour calcul automatique des positions avec dimensions dynamiques
 - Fonction initializeWorld() asynchrone pour chargement API et création de la salle
@@ -97,10 +117,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Technical
 
-- Ajout du champ `type: 'formation' | 'travail'` à l'interface Periode
+- Ajout du champ `type: 'formation' | 'profession'` à l'interface Periode
 - Utilisation du top-level await pour initializeWorld()
 - Les portes de formation utilisent une rotation de 90° (mur gauche)
-- Les portes de travail utilisent une rotation de 0° (mur du fond)
+- Les portes de profession utilisent une rotation de 0° (mur du fond)
 - Algorithme de dimensionnement : minSpacing \* doorCount + margins (avec min/max)
 
 ## [0.3.0] - 2024-12-14

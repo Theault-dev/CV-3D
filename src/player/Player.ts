@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { FBXLoader } from "three-stdlib";
 import { InputManager } from "../core/InputManager";
+import { ModelLoader } from "../services/ModelLoader";
 
 /**
  * Configuration du joueur
@@ -115,51 +115,18 @@ export class Player {
     }
 
     private async loadFBXModel(): Promise<void> {
-        const loader = new FBXLoader();
-
         try {
-            const fbx = await loader.loadAsync("/models/character.fbx");
+            // Charge le modèle via ModelLoader (avec cache et configuration automatique)
+            // const avatarGroup = await ModelLoader.loadFBX(
+            //     "/models/characters/AL_Standard.fbx",
+            //     0.015,
+            // );
+            const avatarGroup = await ModelLoader.loadFBX(
+                "/models/character.fbx",
+                0.015,
+            );
 
-            // Ajuste la taille du modèle si nécessaire
-            // La plupart des modèles FBX ont besoin d'être mis à l'échelle
-            fbx.scale.set(0.02, 0.02, 0.02);
-
-            // Calcule la position avant toute rotation
-            const box = new THREE.Box3().setFromObject(fbx);
-            const center = box.getCenter(new THREE.Vector3());
-
-            // Positionne le modèle : centré en X/Z, avec les pieds au niveau du sol
-            fbx.position.set(-center.x, -box.min.y, -center.z);
-
-            // Configure les matériaux pour utiliser les lumières de la scène
-            fbx.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    if (child.material) {
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach((mat) => {
-                                if (mat instanceof THREE.MeshStandardMaterial) {
-                                    mat.needsUpdate = true;
-                                }
-                            });
-                        } else if (
-                            child.material instanceof THREE.MeshStandardMaterial
-                        ) {
-                            child.material.needsUpdate = true;
-                        }
-                    }
-                }
-            });
-
-            // Crée un groupe pour contenir le modèle avec sa correction d'orientation
-            // Le FBX est placé dans un groupe enfant avec une rotation fixe de 180°
-            // tandis que le groupe parent (this.avatar) sera tourné par le système de contrôle
-            const avatarGroup = new THREE.Group();
-            fbx.rotation.y = Math.PI; // Correction fixe de l'orientation du modèle
-            avatarGroup.add(fbx);
-
-            // Remplace l'avatar temporaire par le nouveau groupe
+            // Remplace l'avatar temporaire par le modèle chargé
             this.group.remove(this.avatar);
             this.avatar = avatarGroup;
             this.group.add(this.avatar);

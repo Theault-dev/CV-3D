@@ -48,12 +48,12 @@ keyboardIndicator.show();
 /**
  * Calcule les dimensions optimales de la salle selon le nombre de portes
  * @param formationCount - Nombre de portes de formation (mur gauche)
- * @param travailCount - Nombre de portes de travail (mur du fond)
+ * @param professionCount - Nombre de portes de profession (mur du fond)
  * @returns Dimensions de la salle
  */
 function calculateRoomDimensions(
     formationCount: number,
-    travailCount: number,
+    professionCount: number,
 ): { width: number; depth: number; height: number } {
     // Espacement minimum entre portes (largeur porte = 1.5, donc 3 unités = bon espacement)
     const minSpacing = 3;
@@ -74,7 +74,7 @@ function calculateRoomDimensions(
     // Nombre de portes * espacement minimum + marges
     const neededWidth = Math.max(
         minWidth,
-        Math.min(maxWidth, travailCount * minSpacing + widthMargin),
+        Math.min(maxWidth, professionCount * minSpacing + widthMargin),
     );
 
     // Calcul de la profondeur nécessaire pour les portes du mur gauche (axe Z)
@@ -93,7 +93,7 @@ function calculateRoomDimensions(
 
 /**
  * Calcule la position d'une porte selon son type et son index
- * @param type - "formation" (mur gauche) ou "travail" (mur du fond)
+ * @param type - "formation" (mur gauche) ou "profession" (mur du fond)
  * @param index - Position dans l'ordre chronologique
  * @param totalOfType - Nombre total de portes de ce type
  * @param roomWidth - Largeur de la salle
@@ -101,7 +101,7 @@ function calculateRoomDimensions(
  * @returns Position THREE.Vector3 et rotation
  */
 function calculateDoorPosition(
-    type: "formation" | "travail",
+    type: "formation" | "profession",
     index: number,
     totalOfType: number,
     roomWidth: number,
@@ -159,12 +159,14 @@ async function initializeWorld(): Promise<THREE.Group> {
 
         // Séparation par type
         const formations = sortedPeriods.filter((p) => p.type === "formation");
-        const travaux = sortedPeriods.filter((p) => p.type === "travail");
+        const professions = sortedPeriods.filter(
+            (p) => p.type === "profession",
+        );
 
         // Calcul des dimensions optimales de la salle
         const roomDimensions = calculateRoomDimensions(
             formations.length,
-            travaux.length,
+            professions.length,
         );
 
         console.log(
@@ -204,12 +206,12 @@ async function initializeWorld(): Promise<THREE.Group> {
             hallGroup.add(door.getObject());
         });
 
-        // Génération des portes de travail
-        travaux.forEach((periode, index) => {
+        // Génération des portes de profession
+        professions.forEach((periode, index) => {
             const { position, rotation } = calculateDoorPosition(
-                "travail",
+                "profession",
                 index,
-                travaux.length,
+                professions.length,
                 roomDimensions.width,
                 roomDimensions.depth,
             );
@@ -220,7 +222,7 @@ async function initializeWorld(): Promise<THREE.Group> {
                 subtitle: `${periode.dates.debut} - ${periode.dates.fin}`,
                 position: position,
                 rotation: rotation,
-                color: "#6b4423", // Marron pour travail
+                color: "#6b4423", // Marron pour profession
             });
 
             doors.push(door);
@@ -228,7 +230,7 @@ async function initializeWorld(): Promise<THREE.Group> {
         });
 
         console.log(
-            `✅ ${doors.length} portes générées (${formations.length} formations, ${travaux.length} travaux)`,
+            `✅ ${doors.length} portes générées (${formations.length} formations, ${professions.length} professions)`,
         );
 
         // Ajouter le hallGroup à la scène
