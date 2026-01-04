@@ -54,6 +54,7 @@ export class Engine {
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limite pour les perfs
+        this.renderer.localClippingEnabled = true;
 
         // 5. Crée le renderer pour les labels CSS
         this.labelRenderer = new CSS2DRenderer();
