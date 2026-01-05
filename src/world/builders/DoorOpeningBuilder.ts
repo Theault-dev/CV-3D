@@ -6,6 +6,7 @@ import {
     createVerticalClipPlaneZ,
 } from "../utils/clipping";
 import type { DoorClipConfig } from "../room/types";
+import { DOOR_OPENING_MARGIN } from "../room/constants";
 
 /**
  * DoorOpeningBuilder - Création d'ouvertures de portes dans les murs
@@ -33,8 +34,10 @@ export class DoorOpeningBuilder {
               ? Math.PI / 2
               : -Math.PI / 2;
 
-        const leftEdge = config.doorLocalPos - config.doorWidth / 2;
-        const rightEdge = config.doorLocalPos + config.doorWidth / 2;
+        const leftEdge =
+            config.doorLocalPos - config.doorWidth / 2 - DOOR_OPENING_MARGIN;
+        const rightEdge =
+            config.doorLocalPos + config.doorWidth / 2 + DOOR_OPENING_MARGIN;
 
         // Création des 3 sections
         const lintel = this.createLintel(wallModel, config.doorHeight);
