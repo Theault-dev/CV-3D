@@ -11,22 +11,31 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Service ModelLoader pour chargement de modèles FBX avec système de cache
 - Configuration automatique des modèles : échelle, position, matériaux et ombres
 - Support du clonage de modèles pour instances multiples depuis le cache
-- Chargement de modèles de murs FBX (Wall_Empty.fbx) dans Room.ts
-- Positionnement automatique des segments de murs FBX pour couvrir toute la salle
+- Chargement de modèles de murs GLB (empty_wall.glb) dans Room.ts
+- Positionnement automatique des segments de murs GLB pour couvrir toute la salle
 - Création de plusieurs instances de murs pour les murs du fond, gauche et droit
-- Orientation correcte des murs : mur du fond (180°), mur gauche (-90°), mur droit (90°)
-- Système d'adaptation automatique du sol aux dimensions réelles des murs FBX
+- Orientation correcte des murs GLB : mur du fond (0°), mur gauche (90°), mur droit (-90°)
+- Système d'adaptation automatique du sol aux dimensions réelles des murs
 - Méthode updateFloorSize() pour redimensionner dynamiquement le sol après chargement des murs
 - Méthode repositionWalls() pour ajuster la position des murs selon les dimensions réelles
 - Paramètres de configuration manuels dans loadWallModels() (wallOffsets, wallOverlap)
+- Interface `DoorPosition` pour passer les positions des portes au constructeur de Room
+- Système d'ouvertures dans les murs aux emplacements des portes
+- Méthode `getDoorAtSegmentPosition()` pour détecter la collision entre segments de mur et portes
+- Subdivision intelligente des segments de mur qui intersectent une porte
+- Création de deux segments latéraux (gauche/droite) de chaque côté des portes avec scale.x adapté
+- Ouverture précise de 1.7 unités (1.5 largeur porte + 0.2 marges) dans les murs
+- Collection des positions de portes dans main.ts avant création de la Room
+- Transmission du tableau `doorPositions` au constructeur de Room pour création des ouvertures
 - Auto-recentrage automatique de la caméra après 2 secondes d'inactivité (style Zelda)
 - Paramètres configurables `idleThreshold` et `autoRecenterSpeed` pour l'auto-recentrage
 
 ### Changed
 
 - Changement du terme "travail" à "profession" dans tout le code
-- Room.ts charge maintenant les murs depuis des modèles FBX au lieu de géométries simples
-- Murs temporaires conservés pendant le chargement des modèles FBX
+- Room.ts charge maintenant les murs depuis des modèles GLB (empty_wall.glb) au lieu de FBX
+- Utilisation de GLTFLoader au lieu de ModelLoader.loadFBX pour le chargement des murs
+- Murs temporaires conservés pendant le chargement des modèles GLB
 - Optimisation du chargement : segments de murs clonés au lieu d'être rechargés (économie réseau)
 - Le sol s'adapte automatiquement aux dimensions réelles calculées des murs
 - Les murs sont repositionnés après calcul pour correspondre exactement aux bords du sol
@@ -38,6 +47,13 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Caméra reste derrière le personnage lors des reculs (3.5 rad/s)
 - Caméra plus rapide lors des strafes (1.2 → 2.1 rad/s, conserve le ratio 60%)
 - Amélioration du comportement de la caméra TPS pour un rendu plus dynamique
+- Les segments de mur ne sont plus créés sur toute la largeur si une porte est présente
+- Calcul dynamique de l'espace disponible de chaque côté d'une porte pour créer des segments adaptés
+- Refactorisation architecture Room : séparation en modules (builders, types, constants, utils)
+- FloorBuilder pour création du sol, WallBuilder pour les murs, DoorOpeningBuilder pour ouvertures
+- Types et interfaces extraits dans room/types.ts pour réutilisabilité
+- Constantes de configuration centralisées dans room/constants.ts
+- Utilitaires de clipping extraits dans utils/clipping.ts
 
 ## [0.4.0] - 2024-12-21
 

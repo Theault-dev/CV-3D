@@ -7,6 +7,10 @@ dist-ssr/
 
 # Models
 **/*.fbx
+**/*.obj
+**/*.gltf
+**/*.glb
+**/*.3ds
 
 # Editor directories and files
 .vscode/*
