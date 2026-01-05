@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { Engine } from "./core/Engine";
 import { InputManager } from "./core/InputManager";
 import { Player } from "./player/Player";
-import { Room } from "./world/Room";
+import { Room } from "./world/room";
 import { Door } from "./world/Door";
 import { InteractionPrompt } from "./ui/InteractionPrompt";
 import { HUD } from "./ui/HUD";
@@ -407,7 +407,11 @@ engine.onUpdate((delta) => {
             }
         }
 
-        if (nearbyDoor && input.isKeyJustPressed("e")) {
+        if (
+            nearbyDoor &&
+            input.isKeyJustPressed("e") &&
+            !nearbyDoor.getIsAnimating()
+        ) {
             enterDoor(nearbyDoor);
         }
     }

@@ -3,7 +3,7 @@ import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 import { Engine } from "../core/Engine";
 import { Player } from "../player/Player";
 import { PeriodRoom } from "./PeriodRoom";
-import { Room } from "./Room";
+import { Room } from "./room";
 import type { Periode } from "../data/types";
 
 /**

@@ -28,6 +28,7 @@ export class Door {
     private id: string;
     private isHighlighted: boolean = false;
     private isOpen: boolean = false;
+    private isAnimating: boolean = false;
 
     // Animation
     private mixer: THREE.AnimationMixer | null = null;
@@ -290,14 +291,21 @@ export class Door {
      * @returns Promise qui se résout quand l'animation est terminée
      */
     public async openAndWait(): Promise<void> {
-        if (this.isOpen || !this.openAction || !this.mixer) {
+        if (
+            this.isOpen ||
+            this.isAnimating ||
+            !this.openAction ||
+            !this.mixer
+        ) {
             return Promise.resolve();
         }
 
         this.isOpen = true;
+        this.isAnimating = true;
 
         return new Promise<void>((resolve) => {
             if (!this.openAction || !this.mixer) {
+                this.isAnimating = false;
                 resolve();
                 return;
             }
@@ -305,6 +313,7 @@ export class Door {
             // Écoute l'événement de fin d'animation
             const onFinished = () => {
                 this.mixer!.removeEventListener("finished", onFinished);
+                this.isAnimating = false;
                 resolve();
             };
 
@@ -322,6 +331,13 @@ export class Door {
      */
     public getIsOpen(): boolean {
         return this.isOpen;
+    }
+
+    /**
+     * Vérifie si la porte est en cours d'animation
+     */
+    public getIsAnimating(): boolean {
+        return this.isAnimating;
     }
 
     /**
