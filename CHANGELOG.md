@@ -49,6 +49,11 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Amélioration du comportement de la caméra TPS pour un rendu plus dynamique
 - Les segments de mur ne sont plus créés sur toute la largeur si une porte est présente
 - Calcul dynamique de l'espace disponible de chaque côté d'une porte pour créer des segments adaptés
+- Refactorisation architecture Room : séparation en modules (builders, types, constants, utils)
+- FloorBuilder pour création du sol, WallBuilder pour les murs, DoorOpeningBuilder pour ouvertures
+- Types et interfaces extraits dans room/types.ts pour réutilisabilité
+- Constantes de configuration centralisées dans room/constants.ts
+- Utilitaires de clipping extraits dans utils/clipping.ts
 
 ## [0.4.0] - 2024-12-21
 

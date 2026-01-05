@@ -191,7 +191,7 @@ async function initializeWorld(): Promise<THREE.Group> {
         }> = [];
 
         // Positions des portes de formation (mur gauche)
-        formations.forEach((periode, index) => {
+        formations.forEach((_, index) => {
             const { position } = calculateDoorPosition(
                 "formation",
                 index,
@@ -203,7 +203,7 @@ async function initializeWorld(): Promise<THREE.Group> {
         });
 
         // Positions des portes de profession (mur du fond)
-        professions.forEach((periode, index) => {
+        professions.forEach((_, index) => {
             const { position } = calculateDoorPosition(
                 "profession",
                 index,
