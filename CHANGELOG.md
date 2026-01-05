@@ -8,6 +8,8 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+- Flag `isAnimating` dans Door.ts pour tracker l'état d'animation des portes
+- Méthode `getIsAnimating()` pour vérifier si une porte est en cours d'animation
 - Service ModelLoader pour chargement de modèles FBX avec système de cache
 - Configuration automatique des modèles : échelle, position, matériaux et ombres
 - Support du clonage de modèles pour instances multiples depuis le cache
@@ -54,6 +56,13 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Types et interfaces extraits dans room/types.ts pour réutilisabilité
 - Constantes de configuration centralisées dans room/constants.ts
 - Utilitaires de clipping extraits dans utils/clipping.ts
+- Mise à jour de `openAndWait()` dans Door.ts pour gérer le flag `isAnimating`
+- Vérification de l'état d'animation avant d'autoriser l'entrée dans une porte (main.ts)
+
+### Fixed
+
+- Correction des imports Room : utilisation de la casse correcte `./world/room` au lieu de `./world/Room`
+- Empêche le spam d'interaction sur les portes pendant leur animation
 
 ## [0.4.0] - 2024-12-21
 
