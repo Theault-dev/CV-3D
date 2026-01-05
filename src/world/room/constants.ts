@@ -10,6 +10,9 @@ export const DEFAULT_WALL_COLOR = "#3a3a4a";
 /** Largeur par défaut des ouvertures de portes */
 export const DEFAULT_DOOR_WIDTH = 1.5;
 
+/** Marge supplémentaire pour les ouvertures de portes (de chaque côté) */
+export const DOOR_OPENING_MARGIN = 0.3;
+
 /** Ratio par défaut hauteur porte / hauteur mur */
 export const DEFAULT_DOOR_HEIGHT_RATIO = 2 / 3;
 

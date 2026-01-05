@@ -8,6 +8,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 
 ### Added
 
+- Constante `DOOR_OPENING_MARGIN` pour configurer la marge des ouvertures de portes
 - Flag `isAnimating` dans Door.ts pour tracker l'état d'animation des portes
 - Méthode `getIsAnimating()` pour vérifier si une porte est en cours d'animation
 - Service ModelLoader pour chargement de modèles FBX avec système de cache
@@ -58,6 +59,8 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 - Utilitaires de clipping extraits dans utils/clipping.ts
 - Mise à jour de `openAndWait()` dans Door.ts pour gérer le flag `isAnimating`
 - Vérification de l'état d'animation avant d'autoriser l'entrée dans une porte (main.ts)
+- Application de `DOOR_OPENING_MARGIN` dans DoorOpeningBuilder pour élargir les ouvertures
+- Les ouvertures de portes sont maintenant élargies de 0.3 unité de chaque côté (0.6 total)
 
 ### Fixed
 
