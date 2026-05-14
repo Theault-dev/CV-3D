@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Modèles 3D</title>
+        <style>
+            body {
+                margin: 0;
+                font-family: "Segoe UI", Arial, sans-serif;
+                background: #1a1a1a;
+                color: #fff;
+            }
+            #sidebar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 350px;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.9);
+                overflow-y: auto;
+                z-index: 100;
+                border-right: 2px solid #333;
+            }
+            #sidebar::-webkit-scrollbar {
+                width: 8px;
+            }
+            #sidebar::-webkit-scrollbar-track {
+                background: #1a1a1a;
+            }
+            #sidebar::-webkit-scrollbar-thumb {
+                background: #4a90d9;
+                border-radius: 4px;
+            }
+            #sidebar h2 {
+                margin: 0;
+                padding: 15px;
+                background: #4a90d9;
+                color: white;
+            }
+            #model-tree {
+                padding: 10px;
+            }
+            details {
+                margin: 5px 0;
+                padding-left: 10px;
+                border-left: 2px solid #333;
+            }
+            details[open] {
+                border-left-color: #4a90d9;
+            }
+            summary {
+                cursor: pointer;
+                padding: 8px 10px;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                margin: 2px 0;
+                user-select: none;
+                transition: background 0.2s;
+            }
+            summary:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+            summary::marker {
+                color: #4a90d9;
+            }
+            .model-item {
+                padding: 8px 20px;
+                margin: 2px 0;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 3px;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .model-item:hover {
+                background: rgba(74, 144, 217, 0.2);
+                padding-left: 25px;
+            }
+            .model-item.active {
+                background: #4a90d9;
+                font-weight: bold;
+            }
+            .model-extension {
+                font-size: 0.8em;
+                color: #888;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 2px 6px;
+                border-radius: 3px;
+            }
+            .model-extension.glb {
+                color: #6dd;
+            }
+            .model-extension.fbx {
+                color: #d96;
+            }
+            #info {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(0, 0, 0, 0.8);
+                padding: 15px;
+                border-radius: 5px;
+                max-width: 400px;
+                z-index: 100;
+            }
+            #info h3 {
+                margin-top: 0;
+            }
+            #playControls {
+                margin-top: 10px;
+            }
+            button {
+                padding: 8px 15px;
+                margin: 5px 2px;
+                background: #4a90d9;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 0.9em;
+            }
+            button:hover {
+                background: #5fa0e9;
+            }
+            button.danger {
+                background: #d94a4a;
+            }
+            button.danger:hover {
+                background: #e95a5a;
+            }
+            #canvas-container {
+                position: absolute;
+                left: 350px;
+                top: 0;
+                width: calc(100vw - 350px);
+                height: 100vh;
+            }
+            .folder-count {
+                font-size: 0.8em;
+                color: #888;
+                margin-left: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="sidebar">
+            <h2>📁 Modèles 3D</h2>
+            <div id="model-tree"></div>
+        </div>
+
+        <div id="info">
+            <h3>Informations</h3>
+            <div id="modelInfo">Aucun modèle chargé</div>
+            <div id="animationInfo"></div>
+            <div id="playControls"></div>
+        </div>
+
+        <div id="canvas-container"></div>
+
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                }
+            }
+        </script>
+
+        <script type="module">
+            import * as THREE from "three";
+            import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+            import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+            import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+            // Structure des modèles (générée depuis find public/models)
+            const modelStructure = {
+                "animated": [
+                    "character.glb",
+                    "empty_wall.glb",
+                    "simple_door.glb"
+                ],
+                "architecture": {
+                    "columns": [
+                        "Column_1.fbx",
+                        "Column_2.fbx",
+                        "Column_3.fbx",
+                        "Column_Slim.fbx"
+                    ],
+                    "doors": [
+                        "DoorScifi13.fbx",
+                        "Door_Double.fbx",
+                        "Door_Free.fbx",
+                        "Door_Single.fbx",
+                        "Keycard.fbx",
+                        "KeycardReader.fbx",
+                        "door.fbx"
+                    ],
+                    "floors": [
+                        "FloorTile_Basic.fbx",
+                        "FloorTile_Basic2.fbx",
+                        "FloorTile_Corner.fbx",
+                        "FloorTile_Double_Hallway.fbx",
+                        "FloorTile_Empty.fbx",
+                        "FloorTile_InnerCorner.fbx",
+                        "FloorTile_Side.fbx"
+                    ],
+                    "pipes": [
+                        "Pipes.fbx"
+                    ],
+                    "roofs": [
+                        "RoofTile_Corner_Pipes.fbx",
+                        "RoofTile_Details.fbx",
+                        "RoofTile_Empty.fbx",
+                        "RoofTile_InnerCorner_Pipes.fbx",
+                        "RoofTile_OrangeVent.fbx",
+                        "RoofTile_Pipes1.fbx",
+                        "RoofTile_Pipes2.fbx",
+                        "RoofTile_Plate.fbx",
+                        "RoofTile_Plate2.fbx",
+                        "RoofTile_Sides_Pipes.fbx",
+                        "RoofTile_SmallVents.fbx",
+                        "RoofTile_Vents.fbx"
+                    ],
+                    "stairs": [
+                        "Staircase.fbx"
+                    ]
+                },
+                "characters": [
+                    "AL_Standard.fbx"
+                ],
+                "details": [
+                    "Details_Arrow.fbx",
+                    "Details_Arrow_2.fbx",
+                    "Details_Basic_1.fbx",
+                    "Details_Basic_2.fbx",
+                    "Details_Basic_3.fbx",
+                    "Details_Basic_4.fbx",
+                    "Details_Cylinder.fbx",
+                    "Details_Cylinder_Long.fbx",
+                    "Details_Dots.fbx",
+                    "Details_Hexagon.fbx",
+                    "Details_Output.fbx",
+                    "Details_Output_Small.fbx",
+                    "Details_Pipes_Long.fbx",
+                    "Details_Pipes_Medium.fbx",
+                    "Details_Pipes_Small.fbx",
+                    "Details_Plate_Details.fbx",
+                    "Details_Plate_Large.fbx",
+                    "Details_Plate_Long.fbx",
+                    "Details_Plate_Small.fbx",
+                    "Details_Triangles.fbx",
+                    "Details_Vent_1.fbx",
+                    "Details_Vent_2.fbx",
+                    "Details_Vent_3.fbx",
+                    "Details_Vent_4.fbx",
+                    "Details_Vent_5.fbx",
+                    "Details_X.fbx"
+                ],
+                "enemies": [
+                    "Enemy_EyeDrone.fbx",
+                    "Enemy_QuadShell.fbx",
+                    "Enemy_Trilobite.fbx"
+                ],
+                "props": [
+                    "Prop_Ammo.fbx",
+                    "Prop_Ammo_Closed.fbx",
+                    "Prop_Ammo_Small.fbx",
+                    "Prop_Barrel1.fbx",
+                    "Prop_Barrel2_Closed.fbx",
+                    "Prop_Barrel2_Open.fbx",
+                    "Prop_Chair.fbx",
+                    "Prop_Chest.fbx",
+                    "Prop_Crate.fbx",
+                    "Prop_Crate_Large.fbx",
+                    "Prop_Crate_Tarp.fbx",
+                    "Prop_Crate_Tarp_Large.fbx",
+                    "Prop_Desk_L.fbx",
+                    "Prop_Desk_Medium.fbx",
+                    "Prop_Desk_Small.fbx",
+                    "Prop_Grenade.fbx",
+                    "Prop_HealthPack.fbx",
+                    "Prop_HealthPack_Tube.fbx",
+                    "Prop_KeyCard.fbx",
+                    "Prop_Locker.fbx",
+                    "Prop_Mine.fbx",
+                    "Prop_Mug.fbx",
+                    "Prop_SatelliteDish.fbx",
+                    "Prop_Shelves_ThinShort.fbx",
+                    "Prop_Shelves_ThinTall.fbx",
+                    "Prop_Shelves_WideShort.fbx",
+                    "Prop_Shelves_WideTall.fbx",
+                    "Prop_Syringe.fbx",
+                    "Props_Base.fbx",
+                    "Props_Capsule.fbx",
+                    "Props_Chest.fbx",
+                    "Props_Computer.fbx",
+                    "Props_ComputerSmall.fbx",
+                    "Props_ContainerFull.fbx",
+                    "Props_Crate.fbx",
+                    "Props_CrateLong.fbx",
+                    "Props_Laser.fbx",
+                    "Props_Pod.fbx",
+                    "Props_Shelf.fbx",
+                    "Props_Shelf_Tall.fbx",
+                    "Props_Statue.fbx",
+                    "Props_Teleporter_1.fbx",
+                    "Props_Teleporter_2.fbx",
+                    "Props_Vessel.fbx",
+                    "Props_Vessel_Short.fbx",
+                    "Props_Vessel_Tall.fbx"
+                ],
+                "walls": [
+                    "DoorDoubleLong_Wall_SideA.fbx",
+                    "DoorDouble_Wall_SideA.fbx",
+                    "DoorDouble_Wall_SideB.fbx",
+                    "DoorSingleLong_Wall_SideA.fbx",
+                    "DoorSingle_Wall_SideA.fbx",
+                    "DoorSingle_Wall_SideB.fbx",
+                    "LongWindow_Wall_SideA.fbx",
+                    "LongWindow_Wall_SideB.fbx",
+                    "SmallWindows_Wall_SideA.fbx",
+                    "SmallWindows_Wall_SideB.fbx",
+                    "ThreeWindows_Wall_SideA.fbx",
+                    "ThreeWindows_Wall_SideB.fbx",
+                    "Wall_1.fbx",
+                    "Wall_2.fbx",
+                    "Wall_3.fbx",
+                    "Wall_4.fbx",
+                    "Wall_5.fbx",
+                    "Wall_Empty.fbx",
+                    "Window_Wall_SideA.fbx",
+                    "Window_Wall_SideB.fbx"
+                ],
+                "weapons": [
+                    "Gun_Pistol.fbx",
+                    "Gun_Revolver.fbx",
+                    "Gun_Rifle.fbx",
+                    "Gun_SMG_Ammo.fbx",
+                    "Gun_Sniper.fbx",
+                    "Gun_Sniper_Ammo.fbx"
+                ],
+                "": [
+                    "character.fbx"
+                ]
+            };
+
+            let scene, camera, renderer, controls;
+            let currentModel = null;
+            let mixer = null;
+            let clock = new THREE.Clock();
+            let currentAnimations = [];
+            let activeModelElement = null;
+
+            function init() {
+                // Scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x2a2a2a);
+
+                // Camera
+                camera = new THREE.PerspectiveCamera(
+                    75,
+                    (window.innerWidth - 350) / window.innerHeight,
+                    0.1,
+                    1000,
+                );
+                camera.position.set(3, 2, 3);
+
+                // Renderer
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth - 350, window.innerHeight);
+                document
+                    .getElementById("canvas-container")
+                    .appendChild(renderer.domElement);
+
+                // Controls
+                controls = new OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+
+                // Lumières
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+
+                const directionalLight = new THREE.DirectionalLight(
+                    0xffffff,
+                    0.8,
+                );
+                directionalLight.position.set(5, 10, 5);
+                scene.add(directionalLight);
+
+                // Grille
+                const gridHelper = new THREE.GridHelper(10, 10);
+                scene.add(gridHelper);
+
+                // Axe helper
+                const axesHelper = new THREE.AxesHelper(2);
+                scene.add(axesHelper);
+
+                window.addEventListener("resize", onWindowResize);
+                animate();
+
+                // Génère l'arborescence
+                generateModelTree();
+            }
+
+            function onWindowResize() {
+                camera.aspect = (window.innerWidth - 350) / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth - 350, window.innerHeight);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const delta = clock.getDelta();
+                if (mixer) {
+                    mixer.update(delta);
+                }
+
+                controls.update();
+                renderer.render(scene, camera);
+            }
+
+            function generateModelTree() {
+                const treeDiv = document.getElementById("model-tree");
+                treeDiv.innerHTML = "";
+
+                function countItems(obj) {
+                    let count = 0;
+                    if (Array.isArray(obj)) {
+                        return obj.length;
+                    }
+                    for (const key in obj) {
+                        if (Array.isArray(obj[key])) {
+                            count += obj[key].length;
+                        } else {
+                            count += countItems(obj[key]);
+                        }
+                    }
+                    return count;
+                }
+
+                function createFolder(name, content, path = "") {
+                    const details = document.createElement("details");
+                    const summary = document.createElement("summary");
+
+                    const count = countItems(content);
+                    summary.innerHTML = `📁 ${name} <span class="folder-count">(${count})</span>`;
+                    details.appendChild(summary);
+
+                    if (Array.isArray(content)) {
+                        // C'est un dossier de fichiers
+                        content.forEach(file => {
+                            const modelItem = createModelItem(file, path);
+                            details.appendChild(modelItem);
+                        });
+                    } else {
+                        // C'est un dossier avec des sous-dossiers
+                        for (const subKey in content) {
+                            const subPath = path ? `${path}/${subKey}` : subKey;
+                            const subFolder = createFolder(subKey, content[subKey], subPath);
+                            details.appendChild(subFolder);
+                        }
+                    }
+
+                    return details;
+                }
+
+                function createModelItem(filename, folderPath) {
+                    const div = document.createElement("div");
+                    div.className = "model-item";
+
+                    const extension = filename.split(".").pop();
+                    const name = filename.replace(`.${extension}`, "");
+                    const fullPath = folderPath ? `${folderPath}/${filename}` : filename;
+
+                    div.innerHTML = `
+                        <span>${name}</span>
+                        <span class="model-extension ${extension}">${extension.toUpperCase()}</span>
+                    `;
+
+                    div.onclick = () => {
+                        if (activeModelElement) {
+                            activeModelElement.classList.remove("active");
+                        }
+                        div.classList.add("active");
+                        activeModelElement = div;
+                        loadModel(`/models/${fullPath}`);
+                    };
+
+                    return div;
+                }
+
+                // Génère l'arborescence
+                for (const key in modelStructure) {
+                    if (key === "") {
+                        // Fichiers à la racine
+                        modelStructure[key].forEach(file => {
+                            const modelItem = createModelItem(file, "");
+                            treeDiv.appendChild(modelItem);
+                        });
+                    } else {
+                        const folder = createFolder(key, modelStructure[key], key);
+                        treeDiv.appendChild(folder);
+                    }
+                }
+            }
+
+            function loadModel(path) {
+                const modelInfoDiv = document.getElementById("modelInfo");
+                const animationInfoDiv = document.getElementById("animationInfo");
+                const controlsDiv = document.getElementById("playControls");
+
+                modelInfoDiv.innerHTML = `<p>⏳ Chargement: <strong>${path}</strong></p>`;
+                animationInfoDiv.innerHTML = "";
+                controlsDiv.innerHTML = "";
+
+                // Supprimer l'ancien modèle
+                if (currentModel) {
+                    scene.remove(currentModel);
+                }
+
+                // Détecter l'extension et choisir le bon loader
+                const extension = path.split(".").pop().toLowerCase();
+
+                if (extension === "glb" || extension === "gltf") {
+                    loadGLTF(path, modelInfoDiv, animationInfoDiv, controlsDiv);
+                } else if (extension === "fbx") {
+                    loadFBX(path, modelInfoDiv, animationInfoDiv, controlsDiv);
+                } else {
+                    modelInfoDiv.innerHTML = `<p style="color: #ff6666;">❌ Format non supporté: ${extension}</p>`;
+                }
+            }
+
+            function loadGLTF(path, modelInfoDiv, animationInfoDiv, controlsDiv) {
+                const loader = new GLTFLoader();
+
+                loader.load(
+                    path,
+                    (gltf) => {
+                        currentModel = gltf.scene;
+                        scene.add(currentModel);
+
+                        // Centrer le modèle
+                        const box = new THREE.Box3().setFromObject(currentModel);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+
+                        currentModel.position.x -= center.x;
+                        currentModel.position.z -= center.z;
+                        currentModel.position.y -= box.min.y;
+
+                        modelInfoDiv.innerHTML = `
+                            <p>✅ <strong>GLB chargé</strong></p>
+                            <p>Dimensions: ${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)}</p>
+                        `;
+
+                        handleAnimations(
+                            gltf.animations,
+                            currentModel,
+                            path,
+                            animationInfoDiv,
+                            controlsDiv,
+                            "GLB",
+                        );
+                    },
+                    (progress) => {
+                        const percent = (
+                            (progress.loaded / progress.total) * 100
+                        ).toFixed(0);
+                        modelInfoDiv.innerHTML = `<p>⏳ Chargement GLB: ${percent}%</p>`;
+                    },
+                    (error) => {
+                        console.error("Erreur de chargement GLB:", error);
+                        modelInfoDiv.innerHTML = `<p style="color: #ff6666;">❌ Erreur GLB: ${error.message}</p>`;
+                    },
+                );
+            }
+
+            function loadFBX(path, modelInfoDiv, animationInfoDiv, controlsDiv) {
+                const loader = new FBXLoader();
+
+                loader.load(
+                    path,
+                    (fbx) => {
+                        currentModel = fbx;
+
+                        const scale = 0.01;
+                        fbx.scale.set(scale, scale, scale);
+
+                        scene.add(fbx);
+
+                        // Centrer le modèle
+                        const box = new THREE.Box3().setFromObject(fbx);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+
+                        fbx.position.x -= center.x;
+                        fbx.position.z -= center.z;
+                        fbx.position.y -= box.min.y;
+
+                        modelInfoDiv.innerHTML = `
+                            <p>✅ <strong>FBX chargé</strong></p>
+                            <p>Dimensions: ${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)}</p>
+                        `;
+
+                        handleAnimations(
+                            fbx.animations,
+                            fbx,
+                            path,
+                            animationInfoDiv,
+                            controlsDiv,
+                            "FBX",
+                        );
+                    },
+                    (progress) => {
+                        const percent = (
+                            (progress.loaded / progress.total) * 100
+                        ).toFixed(0);
+                        modelInfoDiv.innerHTML = `<p>⏳ Chargement FBX: ${percent}%</p>`;
+                    },
+                    (error) => {
+                        console.error("Erreur de chargement FBX:", error);
+                        modelInfoDiv.innerHTML = `<p style="color: #ff6666;">❌ Erreur FBX: ${error.message}</p>`;
+                    },
+                );
+            }
+
+            function handleAnimations(
+                animations,
+                model,
+                path,
+                animationInfoDiv,
+                controlsDiv,
+                format,
+            ) {
+                console.log(`=== INFORMATIONS DU MODÈLE ${format} ===`);
+                console.log("Chemin:", path);
+                console.log("Animations:", animations);
+
+                if (animations && animations.length > 0) {
+                    animationInfoDiv.innerHTML = `
+                        <p><strong>🎬 ${animations.length} animation(s)</strong></p>
+                    `;
+
+                    currentAnimations = [];
+                    mixer = new THREE.AnimationMixer(model);
+
+                    animations.forEach((clip, index) => {
+                        const action = mixer.clipAction(clip);
+                        currentAnimations.push(action);
+
+                        console.log(`Animation ${index}: ${clip.name} (${clip.duration.toFixed(2)}s)`);
+                    });
+
+                    controlsDiv.innerHTML = "<h4>Contrôles:</h4>";
+                    animations.forEach((clip, index) => {
+                        controlsDiv.innerHTML += `
+                            <button onclick="window.playAnimation(${index})">▶ ${clip.name}</button>
+                            <button onclick="window.stopAnimation(${index})">⏸</button>
+                            <br>
+                        `;
+                    });
+
+                    if (animations.length > 1) {
+                        controlsDiv.innerHTML += `
+                            <br>
+                            <button class="danger" onclick="window.playAllAnimations()">▶ TOUT JOUER</button>
+                            <button onclick="window.stopAllAnimations()">⏸ TOUT ARRÊTER</button>
+                        `;
+                    }
+                } else {
+                    animationInfoDiv.innerHTML = `<p>ℹ️ Aucune animation</p>`;
+                    mixer = null;
+                }
+            }
+
+            window.playAnimation = function (index) {
+                if (currentAnimations[index]) {
+                    currentAnimations.forEach((action) => action.stop());
+                    currentAnimations[index].reset();
+                    currentAnimations[index].setLoop(THREE.LoopRepeat);
+                    currentAnimations[index].play();
+                }
+            };
+
+            window.stopAnimation = function (index) {
+                if (currentAnimations[index]) {
+                    currentAnimations[index].stop();
+                }
+            };
+
+            window.playAllAnimations = function () {
+                currentAnimations.forEach((action) => {
+                    action.reset();
+                    action.setLoop(THREE.LoopRepeat);
+                    action.play();
+                });
+            };
+
+            window.stopAllAnimations = function () {
+                currentAnimations.forEach((action) => action.stop());
+            };
+
+            // Initialiser
+            init();
+        </script>
+    </body>
+</html>

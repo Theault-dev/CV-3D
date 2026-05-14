@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { FBXLoader } from "three-stdlib";
 import { InputManager } from "../core/InputManager";
+import { ModelLoader } from "../services/ModelLoader";
 
 /**
  * Configuration du joueur
@@ -12,6 +12,10 @@ interface PlayerConfig {
     cameraFollowSpeed?: number;
     /** Vitesse à laquelle le personnage tourne vers sa direction */
     turnSpeed?: number;
+    /** Délai (secondes) avant auto-recentrage de la caméra */
+    idleThreshold?: number;
+    /** Vitesse du recentrage automatique de la caméra */
+    autoRecenterSpeed?: number;
 }
 
 /**
@@ -43,6 +47,11 @@ export class Player {
     private collisionChecker: ((position: THREE.Vector3) => boolean) | null =
         null;
 
+    // Auto-recentrage de la caméra
+    private idleTimer = 0; // Compteur d'inactivité
+    private idleThreshold: number; // Délai avant auto-recentrage
+    private autoRecenterSpeed: number; // Vitesse auto-recentrage
+
     constructor(
         camera: THREE.PerspectiveCamera,
         input: InputManager,
@@ -52,8 +61,10 @@ export class Player {
         this.input = input;
 
         this.moveSpeed = config.moveSpeed ?? 5;
-        this.cameraFollowSpeed = config.cameraFollowSpeed ?? 2;
+        this.cameraFollowSpeed = config.cameraFollowSpeed ?? 3.5;
         this.turnSpeed = config.turnSpeed ?? 10;
+        this.idleThreshold = config.idleThreshold ?? 0.5;
+        this.autoRecenterSpeed = config.autoRecenterSpeed ?? 1.5;
 
         this.group = new THREE.Group();
 
@@ -104,51 +115,18 @@ export class Player {
     }
 
     private async loadFBXModel(): Promise<void> {
-        const loader = new FBXLoader();
-
         try {
-            const fbx = await loader.loadAsync("/models/character.fbx");
+            // Charge le modèle via ModelLoader (avec cache et configuration automatique)
+            // const avatarGroup = await ModelLoader.loadFBX(
+            //     "/models/characters/AL_Standard.fbx",
+            //     0.015,
+            // );
+            const avatarGroup = await ModelLoader.loadFBX(
+                "/models/character.fbx",
+                0.015,
+            );
 
-            // Ajuste la taille du modèle si nécessaire
-            // La plupart des modèles FBX ont besoin d'être mis à l'échelle
-            fbx.scale.set(0.02, 0.02, 0.02);
-
-            // Calcule la position avant toute rotation
-            const box = new THREE.Box3().setFromObject(fbx);
-            const center = box.getCenter(new THREE.Vector3());
-
-            // Positionne le modèle : centré en X/Z, avec les pieds au niveau du sol
-            fbx.position.set(-center.x, -box.min.y, -center.z);
-
-            // Configure les matériaux pour utiliser les lumières de la scène
-            fbx.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    if (child.material) {
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach((mat) => {
-                                if (mat instanceof THREE.MeshStandardMaterial) {
-                                    mat.needsUpdate = true;
-                                }
-                            });
-                        } else if (
-                            child.material instanceof THREE.MeshStandardMaterial
-                        ) {
-                            child.material.needsUpdate = true;
-                        }
-                    }
-                }
-            });
-
-            // Crée un groupe pour contenir le modèle avec sa correction d'orientation
-            // Le FBX est placé dans un groupe enfant avec une rotation fixe de 180°
-            // tandis que le groupe parent (this.avatar) sera tourné par le système de contrôle
-            const avatarGroup = new THREE.Group();
-            fbx.rotation.y = Math.PI; // Correction fixe de l'orientation du modèle
-            avatarGroup.add(fbx);
-
-            // Remplace l'avatar temporaire par le nouveau groupe
+            // Remplace l'avatar temporaire par le modèle chargé
             this.group.remove(this.avatar);
             this.avatar = avatarGroup;
             this.group.add(this.avatar);
@@ -165,6 +143,9 @@ export class Player {
         const isMoving = this.input.isMoving();
 
         if (isMoving) {
+            // Réinitialise le compteur d'inactivité
+            this.idleTimer = 0;
+
             // Calcule la direction de déplacement relative à la caméra
             const moveDirection = new THREE.Vector3();
 
@@ -201,26 +182,32 @@ export class Player {
                 // Si collision, le joueur reste à sa position actuelle
 
                 // Calcule l'angle vers lequel le personnage doit tourner
-                let targetFacing: number;
+                if (!(movement.z > 0 && movement.x === 0)) {
+                    let targetFacing: number;
 
-                if (movement.z > 0 && movement.x === 0) {
-                    // Recule pur (S seul) : fait face à la caméra exactement
-                    targetFacing = this.cameraAngle + Math.PI;
-                } else {
                     // Autres mouvements : fait face à la direction du mouvement
                     targetFacing = Math.atan2(
                         -moveDirection.x,
                         -moveDirection.z,
                     );
-                }
 
-                // Tourne progressivement le personnage vers sa direction de mouvement
-                this.characterFacing = this.lerpAngle(
-                    this.characterFacing,
-                    targetFacing,
-                    this.turnSpeed * delta,
-                );
-                this.avatar.rotation.y = this.characterFacing;
+                    // Tourne progressivement le personnage vers sa direction de mouvement
+                    this.characterFacing = this.lerpAngle(
+                        this.characterFacing,
+                        targetFacing,
+                        this.turnSpeed * delta,
+                    );
+                    this.avatar.rotation.y = this.characterFacing;
+                } else {
+                    // Si recul pur : le personnage se retourne pour faire face à la caméra
+                    const cameraFacing = this.cameraAngle + Math.PI;
+                    this.characterFacing = this.lerpAngle(
+                        this.characterFacing,
+                        cameraFacing,
+                        this.turnSpeed * delta,
+                    );
+                    this.avatar.rotation.y = this.characterFacing;
+                }
 
                 // La caméra se replace doucement derrière le personnage
                 if (movement.z < 0) {
@@ -231,13 +218,25 @@ export class Player {
                         this.cameraFollowSpeed * delta,
                     );
                 } else if (movement.x !== 0) {
-                    // Strafe ou recule+tourne : vitesse réduite
+                    // Strafe ou recule+strafe : vitesse réduite
                     this.cameraAngle = this.lerpAngle(
                         this.cameraAngle,
                         this.characterFacing,
                         this.cameraFollowSpeed * 0.6 * delta,
                     );
                 }
+            }
+        } else {
+            // Joueur immobile - gestion de l'auto-recentrage
+            this.idleTimer += delta;
+
+            if (this.idleTimer >= this.idleThreshold) {
+                // Auto-recentrage de la caméra derrière le personnage
+                this.cameraAngle = this.lerpAngle(
+                    this.cameraAngle,
+                    this.characterFacing,
+                    this.autoRecenterSpeed * delta,
+                );
             }
         }
 

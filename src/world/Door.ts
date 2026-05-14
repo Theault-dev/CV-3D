@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 /**
  * Configuration d'une porte
@@ -27,128 +28,164 @@ export class Door {
     private id: string;
     private isHighlighted: boolean = false;
     private isOpen: boolean = false;
+    private isAnimating: boolean = false;
 
-    // Dimensions de la porte
-    private static readonly WIDTH = 1.5;
-    private static readonly HEIGHT = 2.5;
-    private static readonly DEPTH = 0.2;
+    // Animation
+    private mixer: THREE.AnimationMixer | null = null;
+    private animations: THREE.AnimationClip[] = [];
+    private openAction: THREE.AnimationAction | null = null;
+    private doorModel: THREE.Group | null = null;
 
-    // Matériaux (partagés pour optimisation)
-    private frameMaterial: THREE.MeshStandardMaterial;
-    private doorMaterial: THREE.MeshStandardMaterial;
+    // Dimensions calculées du modèle
+    private modelHeight: number = 2.5;
+
+    // ==================== CONFIGURATION DU MODÈLE ====================
+    private static readonly MODEL_PATH = "/models/animated/simple_door.glb";
+    private static readonly MODEL_SCALE = 0.9; // Échelle du modèle (1.0 = taille normale)
+    private static readonly MODEL_COLOR: string | null = "#8b7355"; // Couleur (ex: "#ff0000", null pour couleur originale)
+    private static readonly ANIMATION_SPEED = 3; // Vitesse de l'animation (1.0 = vitesse normale, 2.0 = 2x plus rapide)
+    // =================================================================
+
+    private static loader: GLTFLoader = new GLTFLoader();
+    private static cachedModel: THREE.Group | null = null;
+    private static cachedAnimations: THREE.AnimationClip[] = [];
+    private static loadingPromise: Promise<void> | null = null;
 
     constructor(config: DoorConfig) {
         this.id = config.id;
         this.group = new THREE.Group();
-
-        // Matériaux
-        this.frameMaterial = new THREE.MeshStandardMaterial({
-            color: "#4a3728",
-            roughness: 0.8,
-        });
-        this.doorMaterial = new THREE.MeshStandardMaterial({
-            color: config.color ?? "#6b4423",
-            roughness: 0.6,
-        });
-
-        // Crée la porte
-        this.createDoor();
-
-        // Crée le texte (titre + dates)
-        this.createText(config.title, config.subtitle);
 
         // Position et rotation
         this.group.position.copy(config.position);
         if (config.rotation) {
             this.group.rotation.y = config.rotation;
         }
+
+        // Charge le modèle GLTF de manière asynchrone
+        this.loadDoorModel();
+
+        // Crée le texte (titre + dates)
+        this.createText(config.title, config.subtitle);
     }
 
     /**
-     * Crée la géométrie de la porte
+     * Charge le modèle GLTF de la porte (avec système de cache)
      */
-    private createDoor(): void {
-        // Cadre de la porte
-        const frameThickness = 0.15;
+    private async loadDoorModel(): Promise<void> {
+        try {
+            // Si le modèle n'est pas en cache, on le charge
+            if (!Door.cachedModel) {
+                // Si un chargement est déjà en cours, on attend
+                if (Door.loadingPromise) {
+                    await Door.loadingPromise;
+                } else {
+                    // On lance le chargement
+                    Door.loadingPromise = this.loadModelFromFile();
+                    await Door.loadingPromise;
+                    Door.loadingPromise = null;
+                }
+            }
 
-        // Montant gauche
-        const leftFrame = new THREE.Mesh(
-            new THREE.BoxGeometry(frameThickness, Door.HEIGHT, Door.DEPTH),
-            this.frameMaterial,
-        );
-        leftFrame.position.set(
-            -Door.WIDTH / 2 - frameThickness / 2,
-            Door.HEIGHT / 2,
-            0,
-        );
-        this.group.add(leftFrame);
+            // Clone le modèle depuis le cache
+            if (Door.cachedModel) {
+                this.doorModel = Door.cachedModel.clone();
+                this.animations = Door.cachedAnimations;
 
-        // Montant droit
-        const rightFrame = new THREE.Mesh(
-            new THREE.BoxGeometry(frameThickness, Door.HEIGHT, Door.DEPTH),
-            this.frameMaterial,
-        );
-        rightFrame.position.set(
-            Door.WIDTH / 2 + frameThickness / 2,
-            Door.HEIGHT / 2,
-            0,
-        );
-        this.group.add(rightFrame);
+                // Applique l'échelle
+                this.doorModel.scale.set(
+                    Door.MODEL_SCALE,
+                    Door.MODEL_SCALE,
+                    Door.MODEL_SCALE,
+                );
 
-        // Traverse supérieure
-        const topFrame = new THREE.Mesh(
-            new THREE.BoxGeometry(
-                Door.WIDTH + frameThickness * 2,
-                frameThickness,
-                Door.DEPTH,
-            ),
-            this.frameMaterial,
-        );
-        topFrame.position.set(0, Door.HEIGHT + frameThickness / 2, 0);
-        this.group.add(topFrame);
+                // Applique la couleur si définie
+                if (Door.MODEL_COLOR) {
+                    const color = new THREE.Color(Door.MODEL_COLOR);
+                    this.doorModel.traverse((child) => {
+                        if (child instanceof THREE.Mesh) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach((mat) => {
+                                    if (
+                                        mat instanceof
+                                        THREE.MeshStandardMaterial
+                                    ) {
+                                        mat.color.copy(color);
+                                    }
+                                });
+                            } else if (
+                                child.material instanceof
+                                THREE.MeshStandardMaterial
+                            ) {
+                                child.material.color.copy(color);
+                            }
+                        }
+                    });
+                }
 
-        // Panneau de la porte avec pivot sur le bord gauche
-        const doorPanelGroup = new THREE.Group();
-        doorPanelGroup.name = "doorPanel";
+                // Calcule les dimensions du modèle pour positionner le texte
+                const box = new THREE.Box3().setFromObject(this.doorModel);
+                const center = box.getCenter(new THREE.Vector3());
+                this.modelHeight = box.max.y - box.min.y;
 
-        const doorPanel = new THREE.Mesh(
-            new THREE.BoxGeometry(Door.WIDTH, Door.HEIGHT, Door.DEPTH * 0.5),
-            this.doorMaterial,
-        );
-        // Positionner le panneau pour que le pivot soit sur le bord gauche
-        doorPanel.position.x = Door.WIDTH / 2;
-        doorPanel.position.y = Door.HEIGHT / 2;
-        doorPanelGroup.add(doorPanel);
+                // Centre le modèle
+                this.doorModel.position.set(-center.x, -box.min.y, -center.z);
 
-        // Positionner le groupe sur le bord gauche du cadre
-        doorPanelGroup.position.set(-Door.WIDTH / 2, 0, 0);
-        this.group.add(doorPanelGroup);
+                this.group.add(this.doorModel);
 
-        // Poignées (attachées au panneau) - une de chaque côté
-        const handleGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-        const handleMaterial = new THREE.MeshStandardMaterial({
-            color: "#d4af37",
-            metalness: 0.8,
-            roughness: 0.2,
+                // Configure l'animation si elle existe
+                if (this.animations.length > 0 && this.animations[0]) {
+                    this.mixer = new THREE.AnimationMixer(this.doorModel);
+
+                    // Trouve l'animation d'ouverture (première animation du modèle)
+                    const openClip = this.animations[0];
+                    this.openAction = this.mixer.clipAction(openClip);
+                    this.openAction.setLoop(THREE.LoopOnce, 1);
+                    this.openAction.clampWhenFinished = true;
+                }
+            }
+        } catch (error) {
+            console.error(
+                "[Door] Erreur lors du chargement du modèle GLTF:",
+                error,
+            );
+        }
+    }
+
+    /**
+     * Charge le modèle depuis le fichier et le met en cache
+     */
+    private async loadModelFromFile(): Promise<void> {
+        console.log(`[Door] Chargement du modèle "${Door.MODEL_PATH}"...`);
+
+        const gltf = await Door.loader.loadAsync(Door.MODEL_PATH);
+
+        Door.cachedModel = gltf.scene;
+        Door.cachedAnimations = gltf.animations;
+
+        // Configure les matériaux pour utiliser les lumières de la scène
+        Door.cachedModel.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.material) {
+                    if (Array.isArray(child.material)) {
+                        child.material.forEach((mat) => {
+                            if (mat instanceof THREE.MeshStandardMaterial) {
+                                mat.needsUpdate = true;
+                            }
+                        });
+                    } else if (
+                        child.material instanceof THREE.MeshStandardMaterial
+                    ) {
+                        child.material.needsUpdate = true;
+                    }
+                }
+            }
         });
 
-        // Poignée avant (côté visible)
-        const handleFront = new THREE.Mesh(handleGeometry, handleMaterial);
-        handleFront.position.set(
-            Door.WIDTH - 0.2,
-            Door.HEIGHT / 2,
-            Door.DEPTH * 0.3,
+        console.log(
+            `[Door] Modèle chargé avec succès (${Door.cachedAnimations.length} animation(s))`,
         );
-        doorPanelGroup.add(handleFront);
-
-        // Poignée arrière (côté intérieur)
-        const handleBack = new THREE.Mesh(handleGeometry, handleMaterial);
-        handleBack.position.set(
-            Door.WIDTH - 0.2,
-            Door.HEIGHT / 2,
-            -Door.DEPTH * 0.3,
-        );
-        doorPanelGroup.add(handleBack);
     }
 
     /**
@@ -165,7 +202,7 @@ export class Door {
 
         // Crée l'objet CSS2D
         const label = new CSS2DObject(labelDiv);
-        label.position.set(0, Door.HEIGHT + 0.5, 0);
+        label.position.set(0, this.modelHeight + 0.5, 0);
         this.group.add(label);
     }
 
@@ -173,12 +210,30 @@ export class Door {
      * Met en surbrillance la porte (quand le joueur est proche)
      */
     public highlight(enabled: boolean): void {
-        if (this.isHighlighted === enabled) return;
+        if (this.isHighlighted === enabled || !this.doorModel) return;
 
         this.isHighlighted = enabled;
-        this.doorMaterial.emissive = new THREE.Color(
-            enabled ? "#333333" : "#000000",
-        );
+
+        // Applique l'effet de surbrillance à tous les matériaux de la porte
+        this.doorModel.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach((mat) => {
+                        if (mat instanceof THREE.MeshStandardMaterial) {
+                            mat.emissive = new THREE.Color(
+                                enabled ? "#333333" : "#000000",
+                            );
+                        }
+                    });
+                } else if (
+                    child.material instanceof THREE.MeshStandardMaterial
+                ) {
+                    child.material.emissive = new THREE.Color(
+                        enabled ? "#333333" : "#000000",
+                    );
+                }
+            }
+        });
     }
 
     /**
@@ -212,19 +267,63 @@ export class Door {
     }
 
     /**
-     * Ouvre ou ferme la porte (animation du panneau)
+     * Ouvre ou ferme la porte (joue l'animation)
      */
     public setOpen(open: boolean): void {
-        if (this.isOpen === open) return;
+        if (this.isOpen === open || !this.openAction) return;
         this.isOpen = open;
 
-        // Trouver le panneau de la porte
-        const doorPanel = this.group.getObjectByName("doorPanel");
-
-        if (doorPanel) {
-            // Rotation sur Y de -90° pour ouvrir (sens inverse)
-            doorPanel.rotation.y = open ? -Math.PI / 2 : 0;
+        if (open) {
+            // Ouvrir : joue l'animation vers l'avant
+            this.openAction.reset();
+            this.openAction.timeScale = Door.ANIMATION_SPEED;
+            this.openAction.play();
+        } else {
+            // Fermer : joue l'animation vers l'arrière
+            this.openAction.paused = false;
+            this.openAction.timeScale = -Door.ANIMATION_SPEED;
+            this.openAction.play();
         }
+    }
+
+    /**
+     * Ouvre la porte et attend que l'animation se termine
+     * @returns Promise qui se résout quand l'animation est terminée
+     */
+    public async openAndWait(): Promise<void> {
+        if (
+            this.isOpen ||
+            this.isAnimating ||
+            !this.openAction ||
+            !this.mixer
+        ) {
+            return Promise.resolve();
+        }
+
+        this.isOpen = true;
+        this.isAnimating = true;
+
+        return new Promise<void>((resolve) => {
+            if (!this.openAction || !this.mixer) {
+                this.isAnimating = false;
+                resolve();
+                return;
+            }
+
+            // Écoute l'événement de fin d'animation
+            const onFinished = () => {
+                this.mixer!.removeEventListener("finished", onFinished);
+                this.isAnimating = false;
+                resolve();
+            };
+
+            this.mixer.addEventListener("finished", onFinished);
+
+            // Lance l'animation
+            this.openAction.reset();
+            this.openAction.timeScale = Door.ANIMATION_SPEED;
+            this.openAction.play();
+        });
     }
 
     /**
@@ -232,5 +331,21 @@ export class Door {
      */
     public getIsOpen(): boolean {
         return this.isOpen;
+    }
+
+    /**
+     * Vérifie si la porte est en cours d'animation
+     */
+    public getIsAnimating(): boolean {
+        return this.isAnimating;
+    }
+
+    /**
+     * Met à jour l'AnimationMixer (doit être appelé à chaque frame)
+     */
+    public update(delta: number): void {
+        if (this.mixer) {
+            this.mixer.update(delta);
+        }
     }
 }

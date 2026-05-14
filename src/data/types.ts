@@ -13,7 +13,7 @@ export interface EngineConfig {
  */
 export interface Periode {
     id: string;
-    type: "formation" | "travail";
+    type: "formation" | "profession";
     titre: string;
     lieu: string;
     dates: {
